@@ -1,17 +1,16 @@
 
 
-//#include "uart.h"
-#define F_CPU 4915200UL
-#define BAUD 9600
-#define UBRR 31
-//F_CPU/BAUD/16-1
-#include "mem.h"
-
 #include <avr/builtins.h>
-#include <util/setbaud.h>
-#include <util/delay.h>
 #include <avr/common.h>
 #include <stdlib.h>
+#include <avr/interrupt.h>
+#include "usart.h"
+
+#include "mem.h"
+#include "pwm.h"
+
+
+
 void SRAM_test(void)
 {
 	volatile char *ext_ram = (char *) 0x1800; // Start address for the SRAM
@@ -46,60 +45,35 @@ void SRAM_test(void)
 	}
 	printf("SRAM test completed with \r\n%4d errors in write phase and \r\n%4d errors in retrieval phase\r\n\r\n", write_errors, retrieval_errors);
 }
-//#include <avr/io.h>
-void USART_trans(uint8_t data) {
-	//Wait for transmit buffer to clear
-	while(!(UCSR0A & (1 << UDRE0)));
-	UDR0 = data;
-	
-}
-uint8_t USART_recv(void) {
-	//Wait for byte
-	while(!(UCSR0A & (1 << RXC0)));
-	return UDR0;
-}
-void USART_init(unsigned long ubrr) {
-	//Set BAUD
-	UBRR0H = (unsigned char) (ubrr >> 8);
-	UBRR0L = (unsigned char) (ubrr);
-	
-	//Enable recv and trans
-	UCSR0B = (1 << RXEN0) | (1 << TXEN0);
-	//UBRRH == UCSRC. SELECT UCSRC
-	//Frame format: 1 stop bit, 8 bit data
-	UCSR0C = (1 << URSEL0) |(1 << UCSZ01) | (1 << UCSZ00);
-	fdevopen(USART_trans, USART_recv);
-}
 
 
 int main(void)
 {
 	_delay_ms(100);
-	USART_init(UBRR);
-	init_exmem();
-	SRAM_test();
+	usart_init(UBRR);
+	exmem_init();
+	DDRD |= (1 << PD5); //Output
+	OCR1A = 0x80;
+	TCCR1A |= (1 << COM1A1); //Clear OC1A on Compare Match (Set output to low level).
+	TCCR1A |= (1 << WGM10) | (1 << WGM12); // 8 bit fast PWM PWM
+	TCCR1B |= (1 << CS10); //prescaler = 0
+	TIMSK|=(1<<OCIE1A);
+	//Currently gives 20kHz signal because counter counts to 0x80
+	//Max uses CLK betwwen 0.5Mhz and 5Mhz
 	
+	//SRAM_test();
 	//Output
-	DDRE |= (1 << PE1);
-	DDRA |= (1 << PA0);
-	DDRA |= (1 << PA1);
+	//DDRA |= (1 << PA0;)
+	//PORTA |= (1 << PA0);
+	//PORTA |= (1 << PA1);
+
 	
+	printf("%i\n\r", exmem_read(0));
+	exmem_write(0xFF, 0);
+	printf("%i\n\r", exmem_read(0));
+
 	
-	
-	PORTE |= (1 << PE1); //LE=H
-	_delay_ms(10); //Turn off leds
-	PORTA &= ~(1 << PA0);
-	PORTA &= ~(1 << PA1);
-	_delay_ms(1000); //Turn on leds
-	PORTA |= (1 << PA0);
-	PORTA |= (1 << PA1);
-	PORTE &= ~(1 << PE1); //Latch 
-	_delay_ms(10);
-	PORTA &= ~(1 << PA0); //Nothing happens
-	PORTA &= ~(1 << PA1);
-	
-	
-	
+	sei();
 	while (1)
 	{
 		printf("test\n\r");
@@ -107,4 +81,9 @@ int main(void)
 		
 		
 	}
+}
+ISR(TIMER1_COMPA_vect) // interrupt subroutine
+{
+	//Set counter to zero here?
+	//printf("interrupt");
 }

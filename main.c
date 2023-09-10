@@ -53,12 +53,10 @@ int main(void)
 	usart_init(UBRR);
 	exmem_init();
 	DDRD |= (1 << PD5); //Output
-	OCR1A = 0x80;
+	OCR1A = 0x3;
 	TCCR1A |= (1 << COM1A1); //Clear OC1A on Compare Match (Set output to low level).
-	TCCR1A |= (1 << WGM10) | (1 << WGM12); // 8 bit fast PWM PWM
+	TCCR1A |= (1 << WGM10) | (1 << WGM11) | (1 << WGM12) | (1 << WGM13); // 8 bit fast PWM with OCR1A as TOP
 	TCCR1B |= (1 << CS10); //prescaler = 0
-	TIMSK|=(1<<OCIE1A);
-	//Currently gives 20kHz signal because counter counts to 0x80
 	//Max uses CLK betwwen 0.5Mhz and 5Mhz
 	
 	//SRAM_test();
@@ -82,8 +80,4 @@ int main(void)
 		
 	}
 }
-ISR(TIMER1_COMPA_vect) // interrupt subroutine
-{
-	//Set counter to zero here? Test clearing or setting (depends which way counting) OC1x p. 123
-	//printf("interrupt");
-}
+

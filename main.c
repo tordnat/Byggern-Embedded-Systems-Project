@@ -84,6 +84,6 @@ int main(void)
 }
 ISR(TIMER1_COMPA_vect) // interrupt subroutine
 {
-	//Set counter to zero here?
+	//Set counter to zero here? Test clearing or setting (depends which way counting) OC1x p. 123
 	//printf("interrupt");
 }

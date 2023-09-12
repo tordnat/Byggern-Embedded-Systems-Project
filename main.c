@@ -1,5 +1,4 @@
 
-
 #include <avr/builtins.h>
 #include <avr/common.h>
 #include <stdlib.h>
@@ -8,7 +7,7 @@
 
 #include "mem.h"
 #include "pwm.h"
-
+#include "adc.h"
 
 
 void SRAM_test(void)
@@ -49,14 +48,26 @@ void SRAM_test(void)
 
 int main(void)
 {
+	//DDRC = 0xFF;
+	//PORTC = 0x00;
 	_delay_ms(100);
 	usart_init(UBRR);
 	exmem_init();
-	DDRD |= (1 << PD5); //Output
-	OCR1A = 0x3;
-	TCCR1A |= (1 << COM1A1); //Clear OC1A on Compare Match (Set output to low level).
-	TCCR1A |= (1 << WGM10) | (1 << WGM11) | (1 << WGM12) | (1 << WGM13); // 8 bit fast PWM with OCR1A as TOP
+	//DDRD |= (1 << PD5); //Output
+	adc_init();
+
+	
+	/*TCCR1A |= (1 << COM1A1) | (1 << COM1B1); //Clear OC1A on Compare Match (Set output to low level).
+	TCCR1A |= (1 << WGM10) | (1 << WGM11); // 8 bit fast PWM with OCR1A as TOP
 	TCCR1B |= (1 << CS10); //prescaler = 0
+	TCCR1B |= (1 << WGM13); */
+	/*TCCR1A |= (1 << COM1A1) | (1 << COM1B1) | (1 << COM1A0) | (1 << COM1B0); //Clear OC1A on Compare Match (Set output to low level).
+	TCCR1A |= (1 << WGM10) | (1 << WGM11);
+	TCCR1B |= (1 << CS10); //prescaler = 0
+	TCCR1B |= (1 << WGM13) | (1 << WGM12); */
+	
+	//TCCR1B |= (1 << CS10); //prescaler = 0
+	
 	//Max uses CLK betwwen 0.5Mhz and 5Mhz
 	
 	//SRAM_test();
@@ -66,18 +77,26 @@ int main(void)
 	//PORTA |= (1 << PA1);
 
 	
-	printf("%i\n\r", exmem_read(0));
-	exmem_write(0xFF, 0);
-	printf("%i\n\r", exmem_read(0));
+	//printf("%i\n\r", exmem_read(0));
+	//exmem_write(0xFF, 0);
+	//printf("%i\n\r", exmem_read(0));
 
 	
 	sei();
+	/*
+	volatile char *ext_adc = (char *) 0x1400; // Start address for the SRAM
+	_delay_ms(1000);
+	volatile char test = ext_adc[0];
+	_delay_ms(1000);
+	volatile char *ext_ram = (char *) 0x1800;
+	volatile char test2 = ext_ram[0];
+	*/
 	while (1)
 	{
-		printf("test\n\r");
+		//printf("test\n\r");
 		_delay_ms(1000);
-		
-		
+		//SRAM_test();
+		volatile char test = adc_read();
+		printf("adc %i\r\n", test);
 	}
 }
-

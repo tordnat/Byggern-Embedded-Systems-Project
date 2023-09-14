@@ -13,4 +13,10 @@
 SRAM address pins used:
 - A0-A3
 
+## ADC
+
+Joystick
+Pin1(AXIS1 ) -> AIN0
+Pin2 (AXIS2) -> AIN1
+Pin3 (BUTTON) -> AIN2
   

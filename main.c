@@ -1,13 +1,12 @@
-
 #include <avr/builtins.h>
 #include <avr/common.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
+#include "adc.h"
+
 #include "usart.h"
 
 #include "mem.h"
-#include "pwm.h"
-#include "adc.h"
 
 
 void SRAM_test(void)
@@ -94,9 +93,15 @@ int main(void)
 	while (1)
 	{
 		//printf("test\n\r");
-		_delay_ms(1000);
+		_delay_ms(500);
 		//SRAM_test();
-		volatile char test = adc_read();
-		printf("adc %i\r\n", test);
+		volatile char test = adc_read(0);
+		printf("C0 adc %i\r\n", test); // Y axis
+		test = adc_read(1); 
+		printf("C1 adc %i\r\n", test); // X axis
+		test = adc_read(2);
+		printf("C2 adc %i\r\n", test); // Right slider
+		test = adc_read(3);
+		printf("C3 adc %i\r\n", test); // Left slider
 	}
 }

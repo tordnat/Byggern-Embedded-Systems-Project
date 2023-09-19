@@ -25,3 +25,5 @@ Pin3 (BUTTON) -> AIN2
 ## Filter
 
 T = 3.5us
+f_cutoff = 1/1/(2*pi*3.5*10^(-6)) Hz ≈ 45472 Hz = 4.5kHz
+Slew rate = -20 dB/decade standard

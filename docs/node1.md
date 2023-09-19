@@ -21,3 +21,7 @@ Pin2 (AXIS2) -> AIN1
 Pin3 (BUTTON) -> AIN2
   
 ```
+
+## Filter
+
+T = 3.5us

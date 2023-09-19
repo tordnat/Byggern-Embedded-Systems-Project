@@ -8,7 +8,7 @@ void oled_write_d(uint8_t data) {
 	volatile char* oled_data_mem = (char*) 0x1000;
 	oled_data_mem[0] = data;
 }
-void oled_init_program()
+void oled_init_program() //This should be renamed to oled_init()
 {
 	oled_write_c(0xae); // display off
 	oled_write_c(0xa1); //segment remap
@@ -34,4 +34,37 @@ void oled_init_program()
 	oled_write_c(0xaf); // display on
 	
 }
+//Not tested
 
+void oled_reset() {
+	
+}
+void oled_home() {
+
+}
+void oled_goto_line(uint8_t line) {
+	
+}
+void oled_clear_line(line) {
+	
+}
+//Page == row: 0-7 e.g rows in the display, see p.33
+void oled_pos(uint8_t row, uint8_t column) {
+	oled_write_c(0xB0+row);
+	oled_write_c(0x00+(column & (0b1111))); //Lower nibble
+	oled_write_c(0x10+(column >> 4)); //Upper nibble
+}
+void oled_print(char*) {
+	
+}
+void oled_set_brightness(uint8_t level) {
+	
+}
+void OLED_print_arrow (uint8_t row , uint8_t col ){ //This should be placed in a draw.h file
+	OLED_pos(row , col) ;
+	OLED_write_data(0b00011000 ) ;
+	OLED_write_data(0b00011000 ) ;
+	OLED_write_data(0b01111110 ) ;
+	OLED_write_data(0b00111100 ) ;
+	OLED_write_data(0b00011000 ) ;
+}

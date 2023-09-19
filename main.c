@@ -3,47 +3,10 @@
 #include <stdlib.h>
 #include <avr/interrupt.h>
 #include "adc.h"
-
 #include "usart.h"
-
+#include "joystick.h"
 #include "mem.h"
-
-
-void SRAM_test(void)
-{
-	volatile char *ext_ram = (char *) 0x1800; // Start address for the SRAM
-	uint16_t ext_ram_size = 0x800;
-	uint16_t write_errors = 0;
-	uint16_t retrieval_errors = 0;
-	printf("Starting SRAM test...\r\n");
-	// rand() stores some internal state, so calling this function in a loop will
-	// yield different seeds each time (unless srand() is called before this function)
-	uint16_t seed = rand();
-	// Write phase: Immediately check that the correct value was stored
-	srand(seed);
-	for (uint16_t i = 0; i < ext_ram_size; i++) {
-		uint8_t some_value = rand();
-		ext_ram[i] = some_value;
-		uint8_t retreived_value = ext_ram[i];
-		if (retreived_value != some_value) {
-			printf("Write phase error: ext_ram[%4d] = %02X (should be %02X)\r\n", i, retreived_value, some_value);
-			write_errors++;
-		}
-	}
-	// Retrieval phase: Check that no values were changed during or after the write phase
-	srand(seed);
-	// reset the PRNG to the state it had before the write phase
-	for (uint16_t i = 0; i < ext_ram_size; i++) {
-		uint8_t some_value = rand();
-		uint8_t retreived_value = ext_ram[i];
-		if (retreived_value != some_value) {
-			printf("Retrieval phase error: ext_ram[%4d] = %02X (should be %02X)\r\n", i, retreived_value, some_value);
-			retrieval_errors++;
-		}
-	}
-	printf("SRAM test completed with \r\n%4d errors in write phase and \r\n%4d errors in retrieval phase\r\n\r\n", write_errors, retrieval_errors);
-}
-
+#include "oled.h"
 
 int main(void)
 {
@@ -54,6 +17,7 @@ int main(void)
 	exmem_init();
 	//DDRD |= (1 << PD5); //Output
 	adc_init();
+	joystick_full_calibration(200);
 
 	
 	/*TCCR1A |= (1 << COM1A1) | (1 << COM1B1); //Clear OC1A on Compare Match (Set output to low level).
@@ -90,11 +54,13 @@ int main(void)
 	volatile char *ext_ram = (char *) 0x1800;
 	volatile char test2 = ext_ram[0];
 	*/
+	oled_init_program();
 	while (1)
 	{
 		//printf("test\n\r");
-		_delay_ms(500);
-		//SRAM_test();
+		_delay_ms(400);
+		//exmem_SRAM_test();
+		/*
 		volatile char test = adc_read(0);
 		printf("C0 adc %i\r\n", test); // Y axis
 		test = adc_read(1); 
@@ -103,5 +69,17 @@ int main(void)
 		printf("C2 adc %i\r\n", test); // Right slider
 		test = adc_read(3);
 		printf("C3 adc %i\r\n", test); // Left slider
+		*/
+		//oled_init_program();
+		position pos = joystick_get_position();
+		printf("X: %i\r\nY: %i\r\n", pos.x, pos.y);
+		//printf("X: %i\r\n RAW: %i \r\n", pos.x, adc_read(ADC_JOYSTICK_X_CHAN));
+		for(int i = 0; i < 200; i++) {
+			_delay_us(100);
+			oled_write_d(i);
+		}
+
+		printf("Slider R: %i\n\r", slider_get_right());
+		printf("Slider L: %i\n\n\r", slider_get_left());
 	}
 }

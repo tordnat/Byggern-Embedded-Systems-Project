@@ -22,3 +22,10 @@ uint8_t adc_read(int channel) {
 
 	return read_val;
 }
+
+uint8_t* adc_sample_to_array(uint8_t channel, uint8_t* sample_array, uint8_t size){
+	for (int i = 0; i <= size; i++){
+		sample_array[i] = adc_read(channel);
+	}
+	return sample_array;
+}

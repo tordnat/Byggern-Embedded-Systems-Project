@@ -1,15 +1,17 @@
 #include "oled.h"
+#include "fonts.h"
 
 void oled_write_c(uint8_t cmd) {
-	volatile char* oled_cmd_mem = (char*) 0x1200;
+	volatile char* oled_cmd_mem = (char*) 0x1000;
 	oled_cmd_mem[0] = cmd;
 }
 void oled_write_d(uint8_t data) {
-	volatile char* oled_data_mem = (char*) 0x1000;
+	volatile char* oled_data_mem = (char*) 0x1200;
 	oled_data_mem[0] = data;
 }
-void oled_init_program() //This should be renamed to oled_init()
+void oled_init()
 {
+	//From SSD1780 datasheet
 	oled_write_c(0xae); // display off
 	oled_write_c(0xa1); //segment remap
 	oled_write_c(0xda); //common pads hardware: alternative
@@ -36,8 +38,18 @@ void oled_init_program() //This should be renamed to oled_init()
 }
 //Not tested
 
+void oled_clear_line(uint8_t line) {
+	oled_pos(line, 0);
+	for(int j = 0; j < NUM_COLS; j++) {
+		oled_write_d(0x0);
+	}
+}
 void oled_reset() {
-	
+	oled_pos(0, 0);
+	for(int i = 0; i < NUM_PAGES; i++) {
+		oled_clear_line(i);
+	}
+	oled_pos(0, 0);
 }
 void oled_home() {
 
@@ -45,26 +57,30 @@ void oled_home() {
 void oled_goto_line(uint8_t line) {
 	
 }
-void oled_clear_line(line) {
-	
-}
+
 //Page == row: 0-7 e.g rows in the display, see p.33
 void oled_pos(uint8_t row, uint8_t column) {
 	oled_write_c(0xB0+row);
 	oled_write_c(0x00+(column & (0b1111))); //Lower nibble
 	oled_write_c(0x10+(column >> 4)); //Upper nibble
 }
-void oled_print(char*) {
-	
+void oled_print(char c) {
+	c -= 32; //This stupid, why not ascii?
+	oled_write_d(pgm_read_byte(&font8[c][0]));
+	oled_write_d(pgm_read_byte(&font8[c][1]));
+	oled_write_d(pgm_read_byte(&font8[c][2]));
+	oled_write_d(pgm_read_byte(&font8[c][3]));
+	oled_write_d(pgm_read_byte(&font8[c][4]));
+	oled_write_d(pgm_read_byte(&font8[c][5]));
+	oled_write_d(pgm_read_byte(&font8[c][6]));
+	oled_write_d(pgm_read_byte(&font8[c][7]));
 }
-void oled_set_brightness(uint8_t level) {
-	
-}
-void OLED_print_arrow (uint8_t row , uint8_t col ){ //This should be placed in a draw.h file
-	OLED_pos(row , col) ;
-	OLED_write_data(0b00011000 ) ;
-	OLED_write_data(0b00011000 ) ;
-	OLED_write_data(0b01111110 ) ;
-	OLED_write_data(0b00111100 ) ;
-	OLED_write_data(0b00011000 ) ;
+
+void oled_print_arrow(uint8_t row , uint8_t col){ //This should be placed in a draw.h file
+	oled_pos(row, col) ;
+	oled_write_d(0b00011000);
+	oled_write_d(0b00011000);
+	oled_write_d(0b01111110);
+	oled_write_d(0b00111100);
+	oled_write_d(0b00011000);
 }

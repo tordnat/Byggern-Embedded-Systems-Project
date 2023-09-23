@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "adc.h"
 #include "joystick.h"
 #include "utilities.h"

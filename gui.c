@@ -1,5 +1,5 @@
 #include "gui.h"
-
+gui_item_create should not take in children. All nodes start with 0 children
 
 gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void), struct gui_menu_item_t *parent, struct gui_menu_item_t **children, uint8_t num_children) {
 	gui_menu_item *item = (gui_menu_item*) malloc(sizeof(gui_menu_item));

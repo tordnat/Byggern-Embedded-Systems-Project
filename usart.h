@@ -8,6 +8,7 @@
 #include <avr/common.h>
 #include <util/delay.h>
 #include <util/setbaud.h>
+#include <stdlib.h>
 
 void usart_trans(uint8_t data);
 uint8_t usart_recv(void);

@@ -49,3 +49,18 @@ uint8_t joystick_calibrate_y(uint8_t samples){
 	joystick_y_center_calibration = array_avg(sample_array, samples);
 	return joystick_y_center_calibration;
 }
+direction joystick_get_direction (position pos) {
+	if(pos.x == 100 && abs(pos.y) != 100) {
+		return RIGHT;
+	}
+	if(pos.x == -100 && abs(pos.y) != 100) {
+		return LEFT;
+	}
+	if(pos.y == 100 && abs(pos.x) != 100) {
+		return UP;
+	}
+	if(pos.y == -100 && abs(pos.x) != 100) {
+		return DOWN;
+	}
+	return NEUTRAL;
+}

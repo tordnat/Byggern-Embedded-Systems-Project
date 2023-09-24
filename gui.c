@@ -60,16 +60,27 @@ int gui_destroy_all_children(gui_menu_item* parent) {
 gui_menu_item *gui_init() {
 	gui_menu_item *root = gui_menu_item_create("Root", NULL, NULL, NULL, 0);
 	gui_add_child(root, gui_menu_item_create("Start Game", NULL, root, NULL, 0));
+	gui_add_child(root, gui_menu_item_create("High Score", NULL, root, NULL, 0));
+	gui_add_child(root, gui_menu_item_create("Settings", NULL, root, NULL, 0));
+	gui_add_child(root, gui_menu_item_create("Debugging", NULL, root, NULL, 0));
+
 	return root;
 }
 
-void gui_draw_menu(gui_menu_item *item) {
+void gui_draw_menu(gui_menu_item *item, uint8_t selected_item) {
+	oled_reset(); //this should be done smarter
 	oled_pos(0,0);
+	int has_back_btn = 0;
 	if(item->parent != NULL) { //Root, no need to print back button
 		oled_print_str("Back");
-		oled_pos(1,0);
+		has_back_btn = 1;
 	}
 	for(int i = 0; i < item->num_children; i++) {
+		
+		oled_pos(i+has_back_btn,0);
+		if(i == selected_item) {
+			oled_print(arrow);
+		}
 		oled_print_str(item->children[i]->text);
 	}
 }

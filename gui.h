@@ -21,4 +21,4 @@ int gui_add_child(gui_menu_item *parent, gui_menu_item *child);
 int gui_destroy_all_children(gui_menu_item* parent);
 //Returns root item
 gui_menu_item *gui_init();
-void gui_draw_menu(gui_menu_item *root);
+void gui_draw_menu(gui_menu_item *item, uint8_t selected_item);

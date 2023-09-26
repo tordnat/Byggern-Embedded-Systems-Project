@@ -50,16 +50,17 @@ uint8_t joystick_calibrate_y(uint8_t samples){
 	return joystick_y_center_calibration;
 }
 direction joystick_get_direction (position pos) {
-	if(pos.x == 100 && abs(pos.y) != 100) {
+	const int8_t threshold = 90;
+	if(pos.x >= threshold && abs(pos.y) <= threshold) {
 		return RIGHT;
 	}
-	if(pos.x == -100 && abs(pos.y) != 100) {
+	if(pos.x <= -threshold && abs(pos.y) <= threshold) {
 		return LEFT;
 	}
-	if(pos.y == 100 && abs(pos.x) != 100) {
+	if(pos.y >= threshold && abs(pos.x) <= threshold) {
 		return UP;
 	}
-	if(pos.y == -100 && abs(pos.x) != 100) {
+	if(pos.y <= -threshold && abs(pos.x) <= threshold) {
 		return DOWN;
 	}
 	return NEUTRAL;

@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "oled.h"
 #include "gui.h"
+#include "spi.h"
 
 int main(void)
 {
@@ -14,6 +15,8 @@ int main(void)
 	usart_init(UBRR);
 	exmem_init();
 	adc_init();
+	spi_master_init();
+	
 	joystick_full_calibration(200);
 	oled_init();
 	_delay_ms(10);
@@ -26,10 +29,12 @@ int main(void)
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
-	
 	gui_draw_menu(gui_menu_current, selected_item);
 
 	while (1) {
+		//SPI Test
+		spi_transmit('a');
+		spi_read();
 		//Animation loop and sampling should be done independently. Important to have some time between samples. 
 		position joystick_pos = joystick_get_position();
 		joystick_dir = joystick_get_direction(joystick_pos);

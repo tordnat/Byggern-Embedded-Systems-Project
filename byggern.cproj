@@ -160,6 +160,14 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="mcp2515.c">
+      <SubType>compile</SubType>
+      <Link>mcp2515.c</Link>
+    </Compile>
+    <Compile Include="mcp2515.h">
+      <SubType>compile</SubType>
+      <Link>mcp2515.h</Link>
+    </Compile>
     <Compile Include="mem.c">
       <SubType>compile</SubType>
     </Compile>

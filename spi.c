@@ -7,6 +7,7 @@
 #define DD_MOSI DDB5
 #define DD_SCK DDB7 //0b11111
 
+
 void spi_master_init(void){
 	DDRB |= 1 << DDB4; //Set SS port output
 	// Set SCK and MOSI output, all others input
@@ -21,9 +22,10 @@ void spi_transmit(char cData){
 }
 
 uint8_t spi_read(void){
-	spi_transmit('x');
+	spi_transmit('a'); //Don't care
 	return SPDR;
 }
+
 
 void spi_transmit_string(char* string, int length){ //length in bytes
 	for (int i = 0; i <= length; i++){

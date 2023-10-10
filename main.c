@@ -7,7 +7,7 @@
 #include "mem.h"
 #include "oled.h"
 #include "gui.h"
-#include "spi.h"
+#include "mcp2515.h"
 
 int main(void)
 {
@@ -15,8 +15,8 @@ int main(void)
 	usart_init(UBRR);
 	exmem_init();
 	adc_init();
-	spi_master_init();
-	
+	mcp2515_init();
+		
 	joystick_full_calibration(200);
 	oled_init();
 	_delay_ms(10);
@@ -32,9 +32,6 @@ int main(void)
 	gui_draw_menu(gui_menu_current, selected_item);
 
 	while (1) {
-		//SPI Test
-		spi_transmit('a');
-		spi_read();
 		//Animation loop and sampling should be done independently. Important to have some time between samples. 
 		position joystick_pos = joystick_get_position();
 		joystick_dir = joystick_get_direction(joystick_pos);
@@ -82,6 +79,7 @@ int main(void)
 		//_delay_ms(9);
 		//oled_print(c);
 		//_delay_ms(9);
+		/* JOYSTICK TESTING
 		printf("x: %i\n\r", joystick_pos.x);
 		if(joystick_dir == DOWN) {
 			printf("DOWN\n\r");
@@ -98,7 +96,7 @@ int main(void)
 		if(joystick_dir == LEFT) {
 			printf("LEFT\n\r");
 		}
-		
+		*/
 	
 	}
 }

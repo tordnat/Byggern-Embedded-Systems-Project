@@ -154,6 +154,19 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_WAKIF		0x40
 #define MCP_MERRF		0x80
 
+// Global variables
 
+#define MCP_INIT_MODE MODE_LOOPBACK
 
+uint8_t mcp2515_init(void);
+uint8_t mcp2515_reset(void);
+void mcp2515_enable(void);
+void mcp2515_disable(void);
+
+uint8_t mcp2515_read(uint8_t address);
+void mcp2515_write(uint8_t address, uint8_t* value);
+
+uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer);
+void mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask);
+uint8_t mcp2515_read_status();
 #endif

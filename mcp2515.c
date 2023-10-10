@@ -1,37 +1,84 @@
 #include <avr/common.h>
-
+#include <avr/io.h>
+#include <stdio.h>
 #include "spi.h"
+#include "mcp2515.h"
 
 uint8_t mcp2515_init(){
 	uint8_t value;
 	spi_master_init();
 	mcp2515_reset(); //Send reset command
 	
-	mcp2515_read(MCP_CANSTAT, &value);
-	if((value & MODEMASK) != MODE_CONFIG){
+	value = mcp2515_read(MCP_CANSTAT);
+	if((value & MODE_MASK) != MODE_CONFIG){
 		printf("ERR: MCP2515 not in configuration mode after reset!\n\r");
 		return 1;
 	}
 	
+	mcp2515_bit_modify(MCP_CANCTRL, MCP_INIT_MODE, MODE_MASK); // Setting initial mode
+	value = mcp2515_read(MCP_CANSTAT); 
+	if((value & MODE_MASK) != MCP_INIT_MODE){
+		printf("ERR: Error setting MCP2515 mode to MCP_INIT_MODE!\n\r");
+		return 1;
+	}
 	///MORE INIT HERE
 	
 	return 0;
 }
 
+uint8_t mcp2515_reset(void){
+	mcp2515_disable();
+	mcp2515_enable(); //Disable and enable to make sure falling edge is detected
+	spi_transmit(MCP_RESET);
+	mcp2515_disable();
+	return 1;
+}
+
+void mcp2515_enable(void){
+	PORTB &= ~(1 << PB4); //PB4 is chip select for SPI slave	
+}
+
+void mcp2515_disable(void){
+	PORTB |= 1 << PB4; // mulig å legge inn en sjekk her for at verdien blir endret
+}
+
+void mcp2515_write(uint8_t address, uint8_t* value){
+	mcp2515_enable();
+	spi_transmit(MCP_WRITE); //Send instruction
+	spi_transmit(address);   //Send write address
+	spi_transmit(*value);	 //Send value
+	mcp2515_disable();
+}
 
 uint8_t mcp2515_read(uint8_t address){
 	uint8_t result;
-	PORTB &= ~(1 << CAN_CS); // CS Done outside spi_transmit to avoid spikes
+	mcp2515_enable();
 	spi_transmit(MCP_READ);
 	spi_transmit(address);
 	result = spi_read();
-	
-	PORTB |= (1 << CAN_CS);
+	mcp2515_disable();
 	return result;
 }
 
-void mcp2515_write();
-uint8_t mcp2515_request_to_send();
-void mcp2515_bit_modify();
-uint8_t mcp2515_reset();
-uint8_t mcp2515_read_status();
+uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
+	spi_transmit(selected_rts_buffer);
+	return selected_rts_buffer;
+}
+
+void mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
+	mcp2515_enable();
+	spi_transmit(MCP_BITMOD);
+	spi_transmit(address);
+	spi_transmit(mask);
+	spi_transmit(value);
+	mcp2515_disable();
+}
+uint8_t mcp2515_read_status(void){
+	uint8_t status;
+	mcp2515_enable();
+	spi_transmit(MCP_READ_STATUS);
+	status = spi_read();
+	mcp2515_disable();
+	return status;
+	
+}

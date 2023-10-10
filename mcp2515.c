@@ -60,6 +60,20 @@ uint8_t mcp2515_read(uint8_t address){
 	return result;
 }
 
+uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr){
+	uint8_t data;
+	mcp2515_enable();
+	spi_transmit(rx_buffer_addr);
+	data = spi_read();
+	mcp2515_disable();
+}
+
+void mcp2515_load_tx_buffer(uint8_t data, uint8_t tx_buffer_addr){
+	mcp2515_enable();
+	spi_transmit(tx_buffer_addr);
+	spi_transmit(data);
+	mcp2515_disable();
+}
 uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
 	spi_transmit(selected_rts_buffer);
 	return selected_rts_buffer;

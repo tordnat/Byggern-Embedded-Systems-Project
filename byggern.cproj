@@ -142,6 +142,10 @@
     <Compile Include="adc.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="can.h">
+      <SubType>compile</SubType>
+      <Link>can.h</Link>
+    </Compile>
     <Compile Include="fonts.h">
       <SubType>compile</SubType>
     </Compile>

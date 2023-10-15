@@ -22,7 +22,7 @@ void spi_transmit(char cData){
 }
 
 uint8_t spi_read(void){
-	spi_transmit('a'); //Don't care
+	spi_transmit('U'); //Don't care
 	return SPDR;
 }
 

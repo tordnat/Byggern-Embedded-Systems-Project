@@ -30,12 +30,14 @@ int main(void)
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
 	gui_draw_menu(gui_menu_current, selected_item);
-
 	while (1) {
+		printf("CAN Transmit: a \n\r");
+		mcp2515_transmit_tx0('a', 0x0);
+		printf("CAN Receive RX0: %c \n\r", mcp2515_read_rx0());
 		//Animation loop and sampling should be done independently. Important to have some time between samples. 
 		position joystick_pos = joystick_get_position();
 		joystick_dir = joystick_get_direction(joystick_pos);
-		_delay_ms(10);
+		_delay_ms(30);
 
 		//gui_goto_menu(gui_menu_current, selected_item, &joystick_dir, &prev_joystick_dir);
 

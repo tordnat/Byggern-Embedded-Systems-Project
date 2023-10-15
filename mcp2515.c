@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include "spi.h"
 #include "mcp2515.h"
+/*
+Plan: 
+- Kun bruke ett transmit register B0
 
+*/
 uint8_t mcp2515_init(){
 	uint8_t value;
 	spi_master_init();
@@ -42,6 +46,21 @@ void mcp2515_disable(void){
 	PORTB |= 1 << PB4; // mulig å legge inn en sjekk her for at verdien blir endret
 }
 
+uint8_t mcp2515_transmit_tx0(uint8_t data, uint8_t id){ //We do not use more than 2^8 ids in this implementation
+	uint8_t data_length_code = 0x01; //We only send 1 byte
+	mcp2515_load_tx0_buffer(data,id);
+	mcp2515_write(MCP_TXB0DLC, &data_length_code);
+	mcp2515_request_to_send(MCP_RTS_TX0);
+	while ((mcp2515_read_status() & (1 << 0x02))); //Wait for successful transmission
+	return 0;
+}
+
+uint8_t mcp2515_read_rx0(void){
+	uint8_t data;
+	data = mcp2515_read_rx_buffer(0b10010010); //Could read sequentially
+	return data;
+}
+
 void mcp2515_write(uint8_t address, uint8_t* value){
 	mcp2515_enable();
 	spi_transmit(MCP_WRITE); //Send instruction
@@ -66,14 +85,18 @@ uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr){
 	spi_transmit(rx_buffer_addr);
 	data = spi_read();
 	mcp2515_disable();
+	return data;
 }
 
-void mcp2515_load_tx_buffer(uint8_t data, uint8_t tx_buffer_addr){
+void mcp2515_load_tx0_buffer(uint8_t data, uint8_t id){
 	mcp2515_enable();
-	spi_transmit(tx_buffer_addr);
+	spi_transmit(MCP_LOAD_TX0);
+	spi_transmit(id);
+	spi_transmit(MCP_LOAD_TX0+1);
 	spi_transmit(data);
 	mcp2515_disable();
 }
+
 uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
 	spi_transmit(selected_rts_buffer);
 	return selected_rts_buffer;

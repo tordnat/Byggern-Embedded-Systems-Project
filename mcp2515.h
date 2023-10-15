@@ -58,6 +58,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_CANINTF		0x2C
 #define MCP_EFLG		0x2D
 #define MCP_TXB0CTRL	0x30
+#define MCP_TXB0DLC		0x35
 #define MCP_TXB1CTRL	0x40
 #define MCP_TXB2CTRL	0x50
 #define MCP_RXB0CTRL	0x60
@@ -163,6 +164,11 @@ uint8_t mcp2515_reset(void);
 void mcp2515_enable(void);
 void mcp2515_disable(void);
 
+
+uint8_t mcp2515_transmit_tx0(uint8_t data, uint8_t id);
+void mcp2515_load_tx0_buffer(uint8_t data, uint8_t id);
+uint8_t mcp2515_read_rx0(void);
+uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr);
 uint8_t mcp2515_read(uint8_t address);
 void mcp2515_write(uint8_t address, uint8_t* value);
 

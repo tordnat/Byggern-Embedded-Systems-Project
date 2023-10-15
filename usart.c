@@ -1,5 +1,12 @@
 #include "usart.h"
+#define BAUD 9600
+#define UBRR 31 //F_CPU/BAUD/16-1
 
+#include <avr/io.h>
+#include <avr/common.h>
+#include <util/delay.h>
+#include <util/setbaud.h>
+#include <stdlib.h>
 void usart_trans(uint8_t data) {
 	//Wait for transmit buffer to clear
 	while(!(UCSR0A & (1 << UDRE0)));

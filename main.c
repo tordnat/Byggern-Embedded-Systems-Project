@@ -24,7 +24,7 @@ int main(void)
 	_delay_ms(10);
 	
 	
-	//enum character c = arrow;
+	//enum character c = char_arrow;
 	int8_t selected_item = 0;
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;

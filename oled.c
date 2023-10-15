@@ -1,5 +1,6 @@
 #include "oled.h"
 #include "fonts.h"
+#include <avr/io.h>
 
 void oled_init() {
 	//From SSD1780 datasheet
@@ -79,12 +80,4 @@ void oled_print_str(char *str) {
 	while(*c) {
 		oled_print(*c++);
 	}
-}
-void oled_print_arrow(uint8_t page , uint8_t col) { //This should be placed in a draw.h file
-	oled_pos(page, col) ;
-	oled_write_d(0b00011000);
-	oled_write_d(0b00011000);
-	oled_write_d(0b01111110);
-	oled_write_d(0b00111100);
-	oled_write_d(0b00011000);
 }

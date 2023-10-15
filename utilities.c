@@ -1,4 +1,6 @@
 #include "utilities.h"
+#include <avr/builtins.h>
+#include <avr/common.h>
 
 uint8_t byte_to_percentage(uint8_t val){
 	return (val*100)/255;

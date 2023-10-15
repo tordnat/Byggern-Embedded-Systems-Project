@@ -1,4 +1,8 @@
 #include "mem.h"
+#include <avr/io.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 void exmem_init() {
 	MCUCR |= (1 << SRE); //Enable external mem
 	SFIOR |= (1 << XMM0); //7 bit external memory bus

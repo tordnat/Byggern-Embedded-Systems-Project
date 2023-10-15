@@ -111,6 +111,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MODE_CONFIG     0x80
 #define MODE_POWERUP	0xE0
 #define MODE_MASK		0xE0
+#define PRIORITY_MASK	0x03
 #define ABORT_TX        0x10
 #define MODE_ONESHOT	0x08
 #define CLKOUT_ENABLE	0x04
@@ -166,13 +167,13 @@ void mcp2515_disable(void);
 
 
 uint8_t mcp2515_transmit_tx0(uint8_t data, uint8_t id);
-void mcp2515_load_tx0_buffer(uint8_t data, uint8_t id);
+uint8_t mcp2515_load_tx0_buffer(uint8_t data, uint8_t id);
 uint8_t mcp2515_read_rx0(void);
 uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr);
 uint8_t mcp2515_read(uint8_t address);
-void mcp2515_write(uint8_t address, uint8_t* value);
-
+uint8_t mcp2515_write(uint8_t address, uint8_t value);
+uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask);
 uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer);
-void mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask);
+uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask);
 uint8_t mcp2515_read_status();
 #endif

@@ -31,9 +31,13 @@ int main(void)
 	gui_menu_item * gui_menu_current = gui_init();
 	gui_draw_menu(gui_menu_current, selected_item);
 	while (1) {
-		printf("CAN Transmit: a \n\r");
-		mcp2515_transmit_tx0('a', 0x0);
-		printf("CAN Receive RX0: %c \n\r", mcp2515_read_rx0());
+		char test = 'U';
+		//mcp2515_write(0x36, test);
+		printf("CAN Transmit: %c \n\r", test);
+		mcp2515_transmit_tx0(test, 0x0);
+		_delay_us(50);
+		uint8_t data = mcp2515_read_rx0();
+		printf("CAN Receive: %c \n\r", data);
 		//Animation loop and sampling should be done independently. Important to have some time between samples. 
 		position joystick_pos = joystick_get_position();
 		joystick_dir = joystick_get_direction(joystick_pos);

@@ -13,6 +13,7 @@ void spi_master_init(void){
 	// Set SCK and MOSI output, all others input
 	DDR_SPI |= (1 <<DD_MOSI) | (1<<DD_SCK);
 	// Enable SPI, Master, set clock rate at fck/16
+	SPCR &= ~((1<<SPI2X) | (1<<SPR1));
 	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR0); 
 }
 

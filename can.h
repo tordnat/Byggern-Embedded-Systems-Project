@@ -1,5 +1,4 @@
-#ifndef _CAN_H_
-#define _CAN_H_
+#pragma once
 /*
 This driver assumes CANopen standard message ID format.
 */
@@ -9,5 +8,3 @@ This driver assumes CANopen standard message ID format.
 #define CAN_ID_NODE1 0x81
 #define CAN_ID_NODE2 0x82
 #define CAN_ID_TIME 0x100
-
-#endif

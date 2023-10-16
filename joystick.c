@@ -1,6 +1,10 @@
 #include "adc.h"
 #include "joystick.h"
 #include "utilities.h"
+#include <avr/builtins.h>
+#include <avr/common.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define JOYSTICK_X_THRESHOLD 70
 #define JOYSTICK_Y_THRESHOLD 70
@@ -38,14 +42,14 @@ void joystick_full_calibration(uint8_t samples){
 
 uint8_t joystick_calibrate_x(uint8_t samples){
 	uint8_t sample_array[samples];
-	adc_sample_to_array(ADC_JOYSTICK_X_CHAN, sample_array, samples);	
+	adc_read_to_array(ADC_JOYSTICK_X_CHAN, sample_array, samples);	
 	joystick_x_center_calibration = array_avg(sample_array, samples);
 	return joystick_x_center_calibration;
 }
 
 uint8_t joystick_calibrate_y(uint8_t samples){
 	uint8_t sample_array[samples];
-	adc_sample_to_array(ADC_JOYSTICK_X_CHAN, sample_array, samples);
+	adc_read_to_array(ADC_JOYSTICK_X_CHAN, sample_array, samples);
 	joystick_y_center_calibration = array_avg(sample_array, samples);
 	return joystick_y_center_calibration;
 }

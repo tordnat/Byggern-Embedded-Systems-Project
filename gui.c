@@ -1,5 +1,10 @@
 #include "gui.h"
-
+#include <stdlib.h>
+#include <avr/builtins.h>
+#include <avr/common.h>
+#include <string.h>
+#include "oled.h"
+#include "joystick.h"
 
 gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void)) {
 	gui_menu_item *item = (gui_menu_item*) malloc(sizeof(gui_menu_item));
@@ -92,7 +97,7 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 	for(int i = 0; i < item->num_children; i++) {
 		oled_pos(i,0);
 		if(i == selected_item) {
-			oled_print(arrow);
+			oled_print(char_arrow);
 		}
 		oled_print_str(item->children[i]->text);
 	}

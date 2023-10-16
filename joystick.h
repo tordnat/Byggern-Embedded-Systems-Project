@@ -1,8 +1,4 @@
 #pragma once
-#include <avr/builtins.h>
-#include <avr/common.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 typedef struct {
 	int x;

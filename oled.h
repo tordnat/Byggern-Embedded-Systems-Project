@@ -1,4 +1,6 @@
 #pragma once
+#include <avr/common.h>
+#include <avr/builtins.h>
 #define LIGHT_MODE 0
 #define NUM_PAGES 8
 #define NUM_COLS 128

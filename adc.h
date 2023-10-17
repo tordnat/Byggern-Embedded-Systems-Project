@@ -1,4 +1,11 @@
 #pragma once
+#include <avr/builtins.h>
+#include <avr/common.h>
+
+#define ADC_JOYSTICK_Y_CHAN 0
+#define ADC_JOYSTICK_X_CHAN 1
+#define ADC_SLIDER_R_CHAN 2
+#define ADC_SLIDER_L_CHAN 3
 
 //Initializes timer for PWM signal to ADC
 void adc_init(void);

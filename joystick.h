@@ -1,5 +1,6 @@
 #pragma once
-
+#include <avr/common.h>
+#include <avr/builtins.h>
 typedef struct {
 	int x;
 	int y;

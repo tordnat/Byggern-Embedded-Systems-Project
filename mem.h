@@ -1,5 +1,6 @@
 #pragma once
-
+#include <avr/common.h>
+#include <avr/builtins.h>
 #define BASE_ADDRESS 0x1800
 
 

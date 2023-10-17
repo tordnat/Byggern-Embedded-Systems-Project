@@ -12,3 +12,7 @@ Plan:
 - implement high-level CAN send functions (node 1 only sends)
 - Should be done with function pointers to eliminate boilerplate code
 */
+
+uint8_t can_message_transmit(can_message_t* message){ //plz pass my reference
+	mcp2515_transmit_tx0(message);
+}

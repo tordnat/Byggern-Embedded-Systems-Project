@@ -1,6 +1,7 @@
 #ifndef __MCP2515_H
 #define __MCP2515_H
 
+#include "can.h"
 /*
 mcp2515.h
 
@@ -58,11 +59,15 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_CANINTF		0x2C
 #define MCP_EFLG		0x2D
 #define MCP_TXB0CTRL	0x30
+#define MCP_TXB0SIDH	0x31
+#define MCP_TXB0SIDL	0x32
 #define MCP_TXB0DLC		0x35
+#define MCP_TXB0D0		0x36
 #define MCP_TXB1CTRL	0x40
 #define MCP_TXB2CTRL	0x50
 #define MCP_RXB0CTRL	0x60
 #define MCP_RXB0SIDH	0x61
+#define MCP_RXB0DLC		0x65
 #define MCP_RXB1CTRL	0x70
 #define MCP_RXB1SIDH	0x71
 
@@ -111,6 +116,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MODE_CONFIG     0x80
 #define MODE_POWERUP	0xE0
 #define MODE_MASK		0xE0
+#define SIDL_MASK		0xE0
 #define PRIORITY_MASK	0x03
 #define ABORT_TX        0x10
 #define MODE_ONESHOT	0x08
@@ -120,7 +126,11 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define CLKOUT_PS2		0x01
 #define CLKOUT_PS4		0x02
 #define CLKOUT_PS8		0x03
+#define SIDL_ROFFSET	0x05;
+#define SIDH_LOFFSET	0x03;
 
+// Read-status-instruction mask 
+#define STATUS_TX0REQ	0x02;
 
 // CNF1 Register Values
 
@@ -159,6 +169,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 // Global variables
 
 #define MCP_INIT_MODE MODE_LOOPBACK
+#define MCP_MAX_DATA_LENGTH 0x8
 
 uint8_t mcp2515_init(void);
 uint8_t mcp2515_reset(void);
@@ -166,14 +177,8 @@ void mcp2515_enable(void);
 void mcp2515_disable(void);
 
 
-uint8_t mcp2515_transmit_tx0(uint8_t data, uint8_t id);
-uint8_t mcp2515_load_tx0_buffer(uint8_t data, uint8_t id);
-uint8_t mcp2515_read_rx0(void);
-uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr);
+uint8_t mcp2515_transmit_tx0(can_message_t* message);
 uint8_t mcp2515_read(uint8_t address);
 uint8_t mcp2515_write(uint8_t address, uint8_t value);
-uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask);
-uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer);
-uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask);
 uint8_t mcp2515_read_status();
 #endif

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "spi.h"
 #include "mcp2515.h"
+#include "can.h"
+
 /*
 Plan: 
 - Kun bruke ett transmit register B0
@@ -11,40 +13,50 @@ Plan:
 */
 
 uint8_t mcp2515_init(){
-	uint8_t value;
 	spi_master_init();
 	mcp2515_reset(); //Send reset command
-	mcp2515_register_verify(MCP_CANSTAT, MODE_CONFIG, MODE_MASK);
+	mcp2515_register_verify(MCP_CANSTAT, MODE_CONFIG, MODE_MASK); //Verify config mode
 	
-	//Accept all messages
-	uint8_t rx0_config = 0x00;
-	uint8_t tx0_priority = 0x03;
-	mcp2515_write(MCP_RXB0CTRL, rx0_config);
-	mcp2515_write(MCP_RXB1CTRL, rx0_config);
-	//Set highest priority
-	mcp2515_bit_modify(MCP_TXB0CTRL,tx0_priority,PRIORITY_MASK);
-	///MORE INIT HERE
+	// Timing
+	
+	//Clear data length registers and rx filters
+	mcp2515_write(MCP_TXB0DLC, 0x0);
+	mcp2515_write(MCP_TXB0DLC+0x10, 0x0);
+	mcp2515_write(MCP_TXB0DLC+0x20, 0x0);
+	
+	mcp2515_write(MCP_RXB0CTRL,0x0); //No filter
+	mcp2515_write(MCP_RXB1CTRL, 0xFF); // Blocking filter on RXB1
+	
+	// Enable interrupt on receive
+	mcp2515_write(MCP_CANINTE, 0x1); //Interrupt on message received in RXB0
+
+
+	// Set initial mode
 	mcp2515_bit_modify(MCP_CANCTRL, MCP_INIT_MODE, MODE_MASK); // Setting initial mode
 	
 	return 0;
 }
 
-uint8_t mcp2515_transmit_tx0(uint8_t data, uint8_t id){ //We do not use more than 2^8 ids in this implementation
-	uint8_t data_length_code = 0x01; //We only send 1 byte
-	mcp2515_load_tx0_buffer(data,id);
-	mcp2515_write(MCP_TXB0DLC, data_length_code);
+uint8_t mcp2515_transmit_tx0(can_message_t* message){
+	if(mcp2515_read_status(STATUS_TX0REQ)){
+		printf("Err: TX0 Request Flag set \n\r");
+		return 1;
+	}
+	mcp2515_load_tx0_buffer(message);
 	mcp2515_request_to_send(MCP_RTS_TX0);
-	while ((mcp2515_read_status() & (1 << 0x02))); //Wait for successful transmission
 	return 0;
 }
 
-uint8_t mcp2515_read_rx0(void){
-	/*
+uint8_t mcp2515_read_rx0(can_message_t* message_buffer){ ///NOT FINISHED
 	if (!(mcp2515_read_status() & 0x01)){
-		printf("Receive flag not set\n\r");
+		printf("Err: Receive flag not set\n\r");
 		return 0;
 	}
-	*/
+	message_buffer->id &= (mcp2515_read())
+	message_buffer->data_length = mcp2515_read(MCP_RXB0DLC);
+	for (int i = 0; i<message_buffer.data_length; ++i){
+		message_buffer->data[i] = mcp2515_read()
+	}
 	uint8_t data;
 	data = mcp2515_read_rx_buffer(0b10010010); //Could read sequentially
 	return data;
@@ -60,17 +72,20 @@ uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr){
 	return data;
 }
 
-uint8_t mcp2515_load_tx0_buffer(uint8_t data, uint8_t id){
-	mcp2515_enable();
-	spi_transmit(MCP_LOAD_TX0);
-	spi_transmit(id);
-	mcp2515_disable();
-	mcp2515_enable();
-	spi_transmit(MCP_LOAD_TX0+1); //write B0D0 data register instruction, see docs
-	spi_transmit(data);
-	mcp2515_disable();
+uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
+	if(message->data_length > MCP_MAX_DATA_LENGTH){
+		printf("Err: Too long data length, RTR is disabled\n\r");
+		return 1;
+	}
+	mcp2515_write(MCP_TXB0SIDL, (SIDL_MASK & (message->id << SIDL_ROFFSET))); //Bits [0:2]
+	mcp2515_write(MCP_TXB0SIDH, (message->id >> SIDH_LOFFSET)); // Bits [3:10]
+	mcp2515_write(MCP_TXB0DLC, message->data_length);
+	for (int i = 0; i < message->data_length, ++i){
+		mcp2515_write(MCP_TXB0D0+i, message->data[i]);
+	}
 	return 0;
 }
+
 
 uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
 	mcp2515_enable();
@@ -92,14 +107,13 @@ uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
 	}
 	return 0;
 }
-uint8_t mcp2515_read_status(void){
+uint8_t mcp2515_read_status(uint8_t status_mask){
 	uint8_t status;
 	mcp2515_enable();
 	spi_transmit(MCP_READ_STATUS);
-	status = spi_read();
+	status = (spi_read() & status_mask);
 	mcp2515_disable();
-	return status;
-	
+	return status;	
 }
 
 uint8_t mcp2515_write(uint8_t address, uint8_t value){
@@ -121,7 +135,7 @@ uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t
 	if ((data & bit_mask) != expected_value){
 		printf("Expected: %u, Read: %u\n\r", expected_value, data);
 		mcp2515_disable();
-		return 1;
+		return 1; //Should assert!!!
 	}
 	mcp2515_disable();
 	return 0;

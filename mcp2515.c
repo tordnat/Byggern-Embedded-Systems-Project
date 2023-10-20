@@ -116,14 +116,14 @@ uint8_t mcp2515_write(uint8_t address, uint8_t value){
 }
 
 uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){
-	mcp2515_enable();
+	mcp2515_enable(); //Not necessary 
 	uint8_t data = mcp2515_read(address);
 	if ((data & bit_mask) != expected_value){
 		printf("Expected: %u, Read: %u\n\r", expected_value, data);
-		mcp2515_disable();
+		mcp2515_disable();  //Not necessary 
 		return 1;
 	}
-	mcp2515_disable();
+	mcp2515_disable();  //Not necessary 
 	return 0;
 }
 
@@ -151,5 +151,5 @@ void mcp2515_enable(void){
 }
 
 void mcp2515_disable(void){
-	PORTB |= 1 << PB4; // mulig å legge inn en sjekk her for at verdien blir endret
+	PORTB |= 1 << PB4; // mulig Ã¥ legge inn en sjekk her for at verdien blir endret
 }

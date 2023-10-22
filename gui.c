@@ -22,7 +22,6 @@ gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void)) {
 	return item;
 }
 int gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
-	child->parent = parent;
 	if (parent == NULL) {
 		return -1; // Invalid
 	}
@@ -81,6 +80,10 @@ void menu_debugging_func() {
 
 gui_menu_item *gui_init() {
 	gui_menu_item *root = gui_menu_item_create("Root", NULL);
+	if(root == NULL) {
+		printf("Failed to allocate root\n\r");
+		return NULL;
+	}
 	gui_add_child(root, gui_menu_item_create("Start Game", NULL));
 	gui_add_child(root, gui_menu_item_create("High Score", NULL));
 	gui_add_child(root, gui_menu_item_create("Settings", NULL));

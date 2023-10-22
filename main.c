@@ -33,21 +33,25 @@ int main(void)
 	
 	//enum character c = char_arrow;
 	int8_t selected_item = 0;
-	can_message_t test_message;
+	static can_message_t test_message;
+	test_message.id = 22;
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
 	gui_draw_menu(gui_menu_current, selected_item);
-	
-	printf("CAN Transmit: %i \n\r", test_message.data[0]);
+	can_message_t* buffer = get_can_buffer_ptr();
 	while (1) {
-		_delay_ms(10);
-	test_message.id = 69;
-	test_message.data_length = 5;
-	test_message.data[0] = 69;
-		//mcp2515_write(0x36, test);
+	
+	test_message.data_length = 1;
+	test_message.data[0] = 'r';
+	printf("Transmit: %i \n\r", test_message.data[0]);
+	_delay_ms(10);
 	mcp2515_transmit_tx0(&test_message);
 	_delay_ms(10);
+	//cli();
+	uint8_t value = buffer->data[0];
+	printf("Receive: %i \n\r", value);
+	//sei();
 	//printf("CAN Transmit: ID: %i LEN: %i DATA: %i \n\r",test_message.id, test_message.data_length, test_message.data[0]);
 
 	

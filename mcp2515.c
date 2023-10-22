@@ -23,16 +23,18 @@ uint8_t mcp2515_init(){
 	mcp2515_reset(); //Send reset command
 	mcp2515_register_verify(MCP_CANSTAT, MODE_CONFIG, MODE_MASK); //Verify config mode
 	
-	// Timing TO-DO
-	
+	// Speed 500kb/s
+	mcp2515_write(MCP_CNF1, (MCP_SJW << 6) | MCP_BRP);
+	mcp2515_write(MCP_CNF2, (MCP_PRSEG) | (MCP_PHSEG1 << 3));
+	mcp2515_write(MCP_CNF3, MCP_PHSEG2);
+
 	//Clear data length registers and rx filters
 	mcp2515_write(MCP_TXB0DLC, 0x0);
 	mcp2515_write(MCP_TXB0DLC+0x10, 0x0);
 	mcp2515_write(MCP_TXB0DLC+0x20, 0x0);
 	
-	mcp2515_write(MCP_RXB0CTRL,0x0); //No filter
-	mcp2515_write(MCP_RXB1CTRL, 0xFF); // Blocking filter on RXB1
-	
+	mcp2515_bit_modify(MCP_RXB0CTRL,0x60, MCP_RX_FILTER_MASK); //Accept all msgs
+	mcp2515_write(MCP_RXB1CTRL, 0x0);
 	// Enable interrupt on receive
 	mcp2515_write(MCP_CANINTE, 0x1); //Interrupt on message received in RXB0
 
@@ -58,18 +60,19 @@ uint8_t mcp2515_read_rx0(can_message_t* message_buffer){
 		printf("Err: Receive flag not set\n\r");
 		return 1;
 	}
-	message_buffer->id &= (mcp2515_read(MCP_RXB0SIDL) << SIDL_ROFFSET); //&= to clear register
-	message_buffer->id |= (mcp2515_read(MCP_RXB0SIDH) >> SIDH_LOFFSET);
+	message_buffer->id = (mcp2515_read(MCP_RXB0SIDL) >> SIDL_ROFFSET); // = to clear prev values 
+	message_buffer->id |= (mcp2515_read(MCP_RXB0SIDH) << SIDH_LOFFSET);
 	message_buffer->data_length = mcp2515_read(MCP_RXB0DLC);
 	for (int i = 0; i < message_buffer->data_length; ++i){
 		message_buffer->data[i] = mcp2515_read(MCP_RXB0D0 + i);
 	}
+	mcp2515_write(MCP_CANINTF, 0x0);
 	return 0;
 }
 
 static uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	if(message->data_length > MCP_MAX_DATA_LENGTH){
-		printf("Err: Too long data length, RTR is disabled\n\r");
+		printf("Err: Too long data length\n\r");
 		return 1;
 	}
 	mcp2515_write(MCP_TXB0SIDL, (SIDL_MASK & (message->id << SIDL_ROFFSET))); //Bits [0:2]
@@ -78,6 +81,8 @@ static uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	for (int i = 0; i < message->data_length; ++i){
 		mcp2515_write(MCP_TXB0D0+i, message->data[i]);
 	}
+	
+	
 	return 0;
 }
 
@@ -97,7 +102,7 @@ static uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
 	spi_transmit(value);
 	mcp2515_disable();
 	if(mcp2515_register_verify(address, value, mask)){
-		printf("ERR: Unexpected value when verifying\n\r");
+		printf("ERR: Unexpected value verifying\n\r");
 		return 1;
 	}
 	return 0;
@@ -119,21 +124,19 @@ static uint8_t mcp2515_write(uint8_t address, uint8_t value){
 	spi_transmit(value);	 //Send value
 	mcp2515_disable();
 	if(mcp2515_register_verify(address, value, 0xFF)){
-		printf("ERR: Unexpected value when verifying\n\r");
+		printf("ERR: Unexpected value verifying\n\r");
 		return 1;
 	}
 	return 0;
 }
 
 static uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){
-	mcp2515_enable();
 	uint8_t data = mcp2515_read(address);
 	if ((data & bit_mask) != expected_value){
-		printf("Expected: %u, Read: %u\n\r", expected_value, data);
+		printf("R:%i Expected: %u, Read: %u\n\r", address, expected_value, data&bit_mask);
 		mcp2515_disable();
 		return 1; //Should assert!!!
 	} //MAybe implement error counter
-	mcp2515_disable();
 	return 0;
 }
 

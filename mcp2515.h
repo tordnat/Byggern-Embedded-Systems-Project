@@ -81,7 +81,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 
 #define MCP_TX01_MASK	0x14
 #define MCP_TX_MASK		0x54
-
+#define MCP_RX_FILTER_MASK 0x6F
 // Define SPI Instruction Set
 
 #define MCP_WRITE		0x02
@@ -173,7 +173,11 @@ Copyright 2003 Kimberly Otten Software Consulting
 
 #define MCP_INIT_MODE MODE_LOOPBACK
 #define MCP_MAX_DATA_LENGTH 0x8
-
+#define MCP_BRP			0x00
+#define MCP_SJW			0x03
+#define MCP_PRSEG		0X06
+#define MCP_PHSEG1		0x03
+#define MCP_PHSEG2		0x03
 // Globals
 
 uint8_t mcp2515_init(void);

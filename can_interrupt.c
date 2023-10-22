@@ -2,11 +2,10 @@
 
 #include <avr/common.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "can_interrupt.h"
 #include "mcp2515.h"
 #include "can.h"
-
-can_message_t receive_buffer;
 
 void can_interrupt_init(void){ // Assuming SREG is set to enable interrupts
 	GICR  |= (1<<INT0); //Enable INT0
@@ -18,6 +17,7 @@ ISR(INT0_vect){
 }
 
 void can_interrupt_handle(void){
-	mcp2515_read_rx0(&receive_buffer);
-	printf("CAN Interrupt:  ID: %i DATA: %s \n\r", receive_buffer.id, receive_buffer.data);
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		mcp2515_read_rx0(get_can_buffer_ptr());
+	}	
 }

@@ -6,9 +6,6 @@
 #include "can_interrupt.h"
 #include "sam/sam3x/include/sam.h"
 
-uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
-uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
-
 #define LED1 23
 #define LED2 19
 #define MCK 84000000

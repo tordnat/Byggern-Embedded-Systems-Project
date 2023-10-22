@@ -6,18 +6,24 @@
 #include "mcp2515.h"
 #include "can.h"
 
-/*
-Plan: 
-- Kun bruke ett transmit register B0
+// Static
+static uint8_t mcp2515_load_tx0_buffer(can_message_t* message);
+static uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer);
+static uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask);
+static uint8_t mcp2515_write(uint8_t address, uint8_t value);
+static uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask);
+static uint8_t mcp2515_read(uint8_t address);
+static uint8_t mcp2515_reset(void);
+static void mcp2515_enable(void);
+static void mcp2515_disable(void);
 
-*/
 
 uint8_t mcp2515_init(){
 	spi_master_init();
 	mcp2515_reset(); //Send reset command
 	mcp2515_register_verify(MCP_CANSTAT, MODE_CONFIG, MODE_MASK); //Verify config mode
 	
-	// Timing
+	// Timing TO-DO
 	
 	//Clear data length registers and rx filters
 	mcp2515_write(MCP_TXB0DLC, 0x0);
@@ -47,32 +53,21 @@ uint8_t mcp2515_transmit_tx0(can_message_t* message){
 	return 0;
 }
 
-uint8_t mcp2515_read_rx0(can_message_t* message_buffer){ ///NOT FINISHED
-	if (!(mcp2515_read_status() & 0x01)){
+uint8_t mcp2515_read_rx0(can_message_t* message_buffer){
+	if (!(mcp2515_read_status(STATUS_RX0IF))){
 		printf("Err: Receive flag not set\n\r");
-		return 0;
+		return 1;
 	}
-	message_buffer->id &= (mcp2515_read())
+	message_buffer->id &= (mcp2515_read(MCP_RXB0SIDL) << SIDL_ROFFSET); //&= to clear register
+	message_buffer->id |= (mcp2515_read(MCP_RXB0SIDH) >> SIDH_LOFFSET);
 	message_buffer->data_length = mcp2515_read(MCP_RXB0DLC);
-	for (int i = 0; i<message_buffer.data_length; ++i){
-		message_buffer->data[i] = mcp2515_read()
+	for (int i = 0; i < message_buffer->data_length; ++i){
+		message_buffer->data[i] = mcp2515_read(MCP_RXB0D0 + i);
 	}
-	uint8_t data;
-	data = mcp2515_read_rx_buffer(0b10010010); //Could read sequentially
-	return data;
+	return 0;
 }
 
-
-uint8_t mcp2515_read_rx_buffer(uint8_t rx_buffer_addr){
-	uint8_t data;
-	mcp2515_enable();
-	spi_transmit(rx_buffer_addr);
-	data = spi_read();
-	mcp2515_disable();
-	return data;
-}
-
-uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
+static uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	if(message->data_length > MCP_MAX_DATA_LENGTH){
 		printf("Err: Too long data length, RTR is disabled\n\r");
 		return 1;
@@ -80,21 +75,21 @@ uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	mcp2515_write(MCP_TXB0SIDL, (SIDL_MASK & (message->id << SIDL_ROFFSET))); //Bits [0:2]
 	mcp2515_write(MCP_TXB0SIDH, (message->id >> SIDH_LOFFSET)); // Bits [3:10]
 	mcp2515_write(MCP_TXB0DLC, message->data_length);
-	for (int i = 0; i < message->data_length, ++i){
+	for (int i = 0; i < message->data_length; ++i){
 		mcp2515_write(MCP_TXB0D0+i, message->data[i]);
 	}
 	return 0;
 }
 
 
-uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
+static uint8_t mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
 	mcp2515_enable();
 	spi_transmit(selected_rts_buffer);
 	mcp2515_disable();
 	return selected_rts_buffer;
 }
 
-uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
+static uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
 	mcp2515_enable();
 	spi_transmit(MCP_BITMOD);
 	spi_transmit(address);
@@ -107,6 +102,7 @@ uint8_t mcp2515_bit_modify(uint8_t address, uint8_t value, uint8_t mask){
 	}
 	return 0;
 }
+
 uint8_t mcp2515_read_status(uint8_t status_mask){
 	uint8_t status;
 	mcp2515_enable();
@@ -116,7 +112,7 @@ uint8_t mcp2515_read_status(uint8_t status_mask){
 	return status;	
 }
 
-uint8_t mcp2515_write(uint8_t address, uint8_t value){
+static uint8_t mcp2515_write(uint8_t address, uint8_t value){
 	mcp2515_enable();
 	spi_transmit(MCP_WRITE); //Send instruction
 	spi_transmit(address);   //Send write address
@@ -129,19 +125,19 @@ uint8_t mcp2515_write(uint8_t address, uint8_t value){
 	return 0;
 }
 
-uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){
+static uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){
 	mcp2515_enable();
 	uint8_t data = mcp2515_read(address);
 	if ((data & bit_mask) != expected_value){
 		printf("Expected: %u, Read: %u\n\r", expected_value, data);
 		mcp2515_disable();
 		return 1; //Should assert!!!
-	}
+	} //MAybe implement error counter
 	mcp2515_disable();
 	return 0;
 }
 
-uint8_t mcp2515_read(uint8_t address){
+static uint8_t mcp2515_read(uint8_t address){
 	uint8_t result;
 	mcp2515_enable();
 	spi_transmit(MCP_READ);
@@ -151,7 +147,7 @@ uint8_t mcp2515_read(uint8_t address){
 	return result;
 }
 
-uint8_t mcp2515_reset(void){
+static uint8_t mcp2515_reset(void){
 	mcp2515_disable();
 	mcp2515_enable(); //Disable and enable to make sure falling edge is detected
 	spi_transmit(MCP_RESET);
@@ -160,10 +156,10 @@ uint8_t mcp2515_reset(void){
 	return 1;
 }
 
-void mcp2515_enable(void){
+static void mcp2515_enable(void){
 	PORTB &= ~(1 << PB4); //PB4 is chip select for SPI slave
 }
 
-void mcp2515_disable(void){
+static void mcp2515_disable(void){
 	PORTB |= 1 << PB4; // mulig å legge inn en sjekk her for at verdien blir endret
 }

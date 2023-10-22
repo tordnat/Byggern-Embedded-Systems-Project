@@ -67,7 +67,9 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_TXB2CTRL	0x50
 #define MCP_RXB0CTRL	0x60
 #define MCP_RXB0SIDH	0x61
+#define MCP_RXB0SIDL	0x62
 #define MCP_RXB0DLC		0x65
+#define MCP_RXB0D0		0x66
 #define MCP_RXB1CTRL	0x70
 #define MCP_RXB1SIDH	0x71
 
@@ -126,11 +128,12 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define CLKOUT_PS2		0x01
 #define CLKOUT_PS4		0x02
 #define CLKOUT_PS8		0x03
-#define SIDL_ROFFSET	0x05;
-#define SIDH_LOFFSET	0x03;
+#define SIDL_ROFFSET	0x05
+#define SIDH_LOFFSET	0x03
 
 // Read-status-instruction mask 
-#define STATUS_TX0REQ	0x02;
+#define STATUS_RX0IF	0x01
+#define STATUS_TX0REQ	0x02
 
 // CNF1 Register Values
 
@@ -171,14 +174,14 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_INIT_MODE MODE_LOOPBACK
 #define MCP_MAX_DATA_LENGTH 0x8
 
+// Globals
+
 uint8_t mcp2515_init(void);
-uint8_t mcp2515_reset(void);
-void mcp2515_enable(void);
-void mcp2515_disable(void);
-
-
 uint8_t mcp2515_transmit_tx0(can_message_t* message);
-uint8_t mcp2515_read(uint8_t address);
-uint8_t mcp2515_write(uint8_t address, uint8_t value);
-uint8_t mcp2515_read_status();
+uint8_t mcp2515_read_rx0(can_message_t* message_buffer);
+uint8_t mcp2515_read_status(uint8_t status_mask);
+
+
+
+
 #endif

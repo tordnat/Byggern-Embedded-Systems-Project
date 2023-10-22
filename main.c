@@ -10,6 +10,7 @@
 #include "mem.h"
 #include "oled.h"
 #include "gui.h"
+#include "can.h"
 #include "mcp2515.h"
 #include "can_interrupt.h"
 
@@ -32,15 +33,22 @@ int main(void)
 	
 	//enum character c = char_arrow;
 	int8_t selected_item = 0;
+	can_message_t test_message;
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
 	gui_draw_menu(gui_menu_current, selected_item);
+	
+	printf("CAN Transmit: %i \n\r", test_message.data[0]);
 	while (1) {
-		char test = 'u';
+		_delay_ms(10);
+	test_message.id = 69;
+	test_message.data_length = 5;
+	test_message.data[0] = 69;
 		//mcp2515_write(0x36, test);
-		mcp2515_transmit_tx0(test, 0x10);
-		printf("CAN Transmit: %c \n\r", test);
+	mcp2515_transmit_tx0(&test_message);
+	_delay_ms(10);
+	//printf("CAN Transmit: ID: %i LEN: %i DATA: %i \n\r",test_message.id, test_message.data_length, test_message.data[0]);
 
 	
 		/*
@@ -84,7 +92,7 @@ int main(void)
 
 		
 		
-		//_delay_ms(10);
+		
 		
 		*/	
 	}

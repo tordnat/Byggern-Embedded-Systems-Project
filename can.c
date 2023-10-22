@@ -15,4 +15,5 @@ Plan:
 
 uint8_t can_message_transmit(can_message_t* message){ //plz pass my reference
 	mcp2515_transmit_tx0(message);
+	return 0;
 }

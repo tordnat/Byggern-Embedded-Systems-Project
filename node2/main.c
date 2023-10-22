@@ -6,6 +6,9 @@
 #include "can_interrupt.h"
 #include "sam/sam3x/include/sam.h"
 
+uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
+uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
+
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
@@ -60,6 +63,9 @@ void pwm_servo_set_pos(int pos) {
         printf("Calc error\n\r");
     }
 }
+void adc_init() {
+    ADC->ADC_WPMR &= ~ADC_WPMR_WPEN;
+}
 
 int main()
 {
@@ -82,27 +88,37 @@ int main()
 
     PIOA->PIO_CODR = PIO_SODR_P20 | PIO_SODR_P19;
 
-    //CAN br = 
-    //can_init_def_tx_rx_mb(); //Tx = 1, RX = 2
+    //Bitrate: 500kHz, 10 TQ per Nominal bit time, NBT=200ns
+    uint32_t can_br = (15 << CAN_BR_BRP_Pos) | (3 << CAN_BR_SJW_Pos) | (6 << CAN_BR_PROPAG_Pos) | (3 << CAN_BR_PHASE1_Pos) | (3 << CAN_BR_PHASE2_Pos);
+    //Tx = 1, RX = 2
+    if(can_init_def_tx_rx_mb(can_br)) {
+        printf("Can failed init\n\r");
+    }
     //CAN_MESSAGE *recieved_message;
     //can_receive(recieved_message, 1);
 
     
-    /* p.533 for setup
-    *  Pin 45 == PC19
-    *  PC19 uses signal PWMH5
-    */
+    CAN_MESSAGE msg;
+    msg.data[0] = 'u';
+    msg.data_length = 1;
+    msg.id = 40;
     
     pwm_init();
+    adc_init();
     printf("Finished init\n\r");
     while (1) {
-        
-
             for(int j = -100; j < 101; j++) {
-                for(int i = 0; i < 1000000; i++) {
+                for(int i = 0; i < 20000000; i++) {
                     volatile int x = i;  
                 }
-                pwm_servo_set_pos(j); 
+                pwm_servo_set_pos(j);
+                printf("Sendning can message\n\r");
+                int err = can_send(&msg, 0);
+                if(err) {
+                    printf("Can failed to send, error: %d \n\r", err);
+                } else {
+                    printf("Succesfully sent\n\r");
+                }
             }   
     }
     //BAUD = T_q * bitrate

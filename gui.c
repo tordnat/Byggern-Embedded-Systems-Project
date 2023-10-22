@@ -105,7 +105,6 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 }
 
 void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr) {
-	/*
 	direction tmp_joystick_dir = * joystick_dir_ptr;
 	direction tmp_joystick_dir_prev = * prev_joystick_dir_ptr;
 	printf("tmp_joystick_dir %i \r\n", tmp_joystick_dir);
@@ -119,7 +118,7 @@ void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, dire
 	}
 	if(tmp_joystick_dir == UP && tmp_joystick_dir_prev == NEUTRAL) {
 		(*selected_item) -= 1;
-		if(selected_item <= 0) (*selected_item) = 0;			 //Fix this, not effective
+		if((*selected_item) <= 0) (*selected_item) = 0;			 //Fix this, not effective
 		gui_draw_menu((*gui_menu_current), (*selected_item));
 	}
 	//Go to selected child
@@ -141,5 +140,4 @@ void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, dire
 		}
 	}
 	(*prev_joystick_dir_ptr) = tmp_joystick_dir;
-	*/
 }

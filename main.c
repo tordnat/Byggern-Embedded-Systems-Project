@@ -34,7 +34,7 @@ int main(void)
 	//enum character c = char_arrow;
 	int8_t selected_item = 0;
 	static can_message_t test_message;
-	test_message.id = 0x420;
+	test_message.id = 0x42; //66
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
@@ -44,16 +44,17 @@ int main(void)
 	
 	
 	test_message.data_length = 1;
-	test_message.data[0] = 0x69;
+	test_message.data[0] = 0x69; //105
 	//printf("Transmit: %i \n\r", test_message.data[0]);
 	mcp2515_transmit_tx0(&test_message);
-	_delay_ms(50);
+	_delay_ms(5000);
 	uint8_t value = buffer->data[0];
 	if(can_is_interrupt){
 		printf("Interupt!: %i \n\r", mcp2515_interrupt_flags);
 		printf("Receive: %i \n\r", value);
 		can_is_interrupt = 0;	
 	}
+
 	//printf("CAN Transmit: ID: %i LEN: %i DATA: %i \n\r",test_message.id, test_message.data_length, test_message.data[0]);
 
 	

@@ -3,6 +3,7 @@
 #include <avr/builtins.h>
 #include <avr/common.h>
 #include <string.h>
+#include <stdio.h>
 #include "oled.h"
 #include "joystick.h"
 
@@ -21,7 +22,6 @@ gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void)) {
 	return item;
 }
 int gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
-	child->parent = parent;
 	if (parent == NULL) {
 		return -1; // Invalid
 	}
@@ -80,12 +80,16 @@ void menu_debugging_func() {
 
 gui_menu_item *gui_init() {
 	gui_menu_item *root = gui_menu_item_create("Root", NULL);
+	if(root == NULL) {
+		printf("Failed to allocate root\n\r");
+		return NULL;
+	}
 	gui_add_child(root, gui_menu_item_create("Start Game", NULL));
 	gui_add_child(root, gui_menu_item_create("High Score", NULL));
 	gui_add_child(root, gui_menu_item_create("Settings", NULL));
 	
 	//Should be an easier way to index the items in the array. Enum or define?
-	//Setting
+	//Settings menu
 	gui_add_child(root->children[2], gui_menu_item_create("Calibrate", NULL));
 	gui_add_child(root->children[2], gui_menu_item_create("Debugging", NULL));
 
@@ -103,36 +107,39 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 	}
 }
 
-void gui_goto_menu(gui_menu_item *gui_menu_current, int8_t selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr) {
+void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr) {
 	direction tmp_joystick_dir = * joystick_dir_ptr;
 	direction tmp_joystick_dir_prev = * prev_joystick_dir_ptr;
-
+	printf("tmp_joystick_dir %i \r\n", tmp_joystick_dir);
+	printf("tmp_joystick_dir_prev %i\r\n", tmp_joystick_dir_prev);
+	
+	
 	if(tmp_joystick_dir == DOWN && tmp_joystick_dir_prev == NEUTRAL) {
-		selected_item += 1;
-		if(selected_item >= gui_menu_current->num_children) selected_item = gui_menu_current->num_children-1; //Fix this, not effective
-		gui_draw_menu(gui_menu_current, selected_item); //Should not draw entire menu for each selection. Clear and draw page should be enough
+		(*selected_item) += 1;
+		if((*selected_item) >= (*gui_menu_current)->num_children) (*selected_item) = (*gui_menu_current)->num_children-1; //Fix this, not effective
+		gui_draw_menu((*gui_menu_current), (*selected_item)); //Should not draw entire menu for each selection. Clear and draw page should be enough
 	}
 	if(tmp_joystick_dir == UP && tmp_joystick_dir_prev == NEUTRAL) {
-		selected_item -= 1;
-		if(selected_item <= 0) selected_item = 0;			 //Fix this, not effective
-		gui_draw_menu(gui_menu_current, selected_item);
+		(*selected_item) -= 1;
+		if((*selected_item) <= 0) (*selected_item) = 0;			 //Fix this, not effective
+		gui_draw_menu((*gui_menu_current), (*selected_item));
 	}
 	//Go to selected child
 	if(tmp_joystick_dir == RIGHT && tmp_joystick_dir_prev == NEUTRAL) {
-		if(gui_menu_current->num_children != 0) { //To ensure next if does not select from an empty array
-			if(gui_menu_current->children[selected_item]->num_children != 0) {
-				gui_menu_current = gui_menu_current->children[selected_item];
-				selected_item = 0;
-				gui_draw_menu(gui_menu_current, selected_item);
+		if((*gui_menu_current)->num_children != 0) { //To ensure next if does not select from an empty array
+			if((*gui_menu_current)->children[(*selected_item)]->num_children != 0) {
+				(*gui_menu_current) = (*gui_menu_current)->children[(*selected_item)];
+				(*selected_item) = 0;
+				gui_draw_menu((*gui_menu_current), (*selected_item));
 			}
 		}
 	}
 	//Go to parent
 	if(tmp_joystick_dir == LEFT && tmp_joystick_dir_prev == NEUTRAL) {
-		if(gui_menu_current->parent != NULL){ //Check for no parent
-			gui_menu_current = gui_menu_current->parent;
-			gui_draw_menu(gui_menu_current, selected_item);
-			selected_item = 0;
+		if((*gui_menu_current)->parent != NULL){ //Check for no parent
+			(*gui_menu_current) = (*gui_menu_current)->parent;
+			gui_draw_menu((*gui_menu_current), (*selected_item));
+			(*selected_item) = 0;
 		}
 	}
 	(*prev_joystick_dir_ptr) = tmp_joystick_dir;

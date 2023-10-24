@@ -142,9 +142,26 @@
     <Compile Include="adc.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="can.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="can.h">
       <SubType>compile</SubType>
       <Link>can.h</Link>
+    </Compile>
+    <Compile Include="can_interrupt.c">
+      <SubType>compile</SubType>
+      <Link>can_interrupt.c</Link>
+    </Compile>
+    <Compile Include="can_interrupt.h">
+      <SubType>compile</SubType>
+      <Link>can_interrupt.h</Link>
+    </Compile>
+    <Compile Include="debug.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="debug.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="fonts.h">
       <SubType>compile</SubType>

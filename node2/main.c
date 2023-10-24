@@ -6,9 +6,12 @@
 #include "can_interrupt.h"
 #include "sam/sam3x/include/sam.h"
 
+
 #define LED1 23
 #define LED2 19
-#define MCK 84000000
+
+
+
 
 #define PWM_PERIOD 1641
 #define PWM_SERVO_DUTY_MIN 82
@@ -68,19 +71,20 @@ int main()
 {
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
-    configure_uart();
-    printf("Hello World\n\r");
-    
-    PIOA->PIO_WPMR &= ~PIO_WPMR_WPEN;	//Write protect disable
-    PMC->PMC_PCER0 |= PMC_PCER0_PID11; //Enable clock for PIOA
 
+    PIOA -> PIO_WPMR &= ~PIO_WPMR_WPEN;	
+    PMC->PMC_PCER0 |= PMC_PCER0_PID11;
     //PMC->PMC_PCER1 = PMC_PCER1_PID33;
     PIOA->PIO_PER |= PIO_PER_P19; //enable pin
     PIOA->PIO_OER |= PIO_OER_P19; //enable output
-    PIOA->PIO_SODR |= PIO_SODR_P19; //Set output data
+    PIOA->PIO_PER |= PIO_PER_P23; //enable pin
+    PIOA->PIO_OER |= PIO_OER_P23; //enable output
+    PIOA->PIO_SODR |= PIO_SODR_P19;
+    PIOA->PIO_SODR |= PIO_SODR_P23;
 
     PIOA->PIO_PER |= PIO_PER_P20; //enable pin
     PIOA->PIO_OER |= PIO_OER_P20; //enable output
+
     PIOA->PIO_SODR |= PIO_SODR_P20; //Set output data
 
     PIOA->PIO_CODR = PIO_SODR_P20 | PIO_SODR_P19;
@@ -104,6 +108,7 @@ int main()
     pwm_init();
     adc_init();
     printf("Finished init\n\r");
+
     while (1) {
             for(int j = -100; j < 101; j++) {
                 for(int i = 0; i < 20000000; i++) {
@@ -119,5 +124,7 @@ int main()
                 }
             }   
     }
+
     //BAUD = T_q * bitrate
+
 }

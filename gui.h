@@ -1,5 +1,7 @@
 #pragma once
-
+#include <avr/common.h>
+#include <avr/builtins.h>
+#include "joystick.h"
 #define GUI_STRING_MAX_LENGTH 32
 
 typedef struct gui_menu_item_t{
@@ -27,5 +29,12 @@ gui_menu_item *gui_init();
 //Draws all menu items to oled
 void gui_draw_menu(gui_menu_item *item, int8_t selected_item);
 
-//Need to change name, should be the animation loop. Not completed yet
-void gui_goto_menu(gui_menu_item *gui_menu_current, int8_t selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr);
+/*
+* Need to change name, should be the animation loop. Not completed yet
+* gui_menu_current - pointer to currently visible gui item
+* selected_item: number for selected item. Arrow is drawn here.
+* joystick_dir_ptr - pointer to the pointer direction at current time
+* prev_joystick_dir_ptr - pointer to the previous joystick direction
+* 
+*/
+void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr);

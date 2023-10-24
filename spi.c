@@ -18,8 +18,10 @@ void spi_master_init(void){
 }
 
 void spi_transmit(char cData){
+	cli(); //Disable interrupts
 	SPDR = cData;
 	while(!(SPSR & (1<<SPIF))); //Wait for transmission completed
+	sei();
 }
 
 uint8_t spi_read(void){

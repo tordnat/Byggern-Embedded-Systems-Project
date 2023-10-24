@@ -16,7 +16,7 @@
 
 int main(void)
 {
-	_delay_ms(10);
+	_delay_ms(30);
 	usart_init(UBRR);
 	exmem_init();
 	adc_init();
@@ -26,15 +26,15 @@ int main(void)
 		
 	joystick_full_calibration(200);
 	oled_init();
-	_delay_ms(10);
+	_delay_ms(30);
 	oled_reset();
-	_delay_ms(10);
+	_delay_ms(30);
 	
 	
 	//enum character c = char_arrow;
 	int8_t selected_item = 0;
 	static can_message_t test_message;
-	test_message.id = 22;
+	test_message.id = 0x420;
 	direction joystick_dir;
 	direction prev_joystick_dir = NEUTRAL;
 	gui_menu_item * gui_menu_current = gui_init();
@@ -42,16 +42,18 @@ int main(void)
 	can_message_t* buffer = get_can_buffer_ptr();
 	while (1) {
 	
+	
 	test_message.data_length = 1;
-	test_message.data[0] = 'r';
-	printf("Transmit: %i \n\r", test_message.data[0]);
-	_delay_ms(10);
+	test_message.data[0] = 0x69;
+	//printf("Transmit: %i \n\r", test_message.data[0]);
 	mcp2515_transmit_tx0(&test_message);
-	_delay_ms(10);
-	//cli();
+	_delay_ms(50);
 	uint8_t value = buffer->data[0];
-	printf("Receive: %i \n\r", value);
-	//sei();
+	if(can_is_interrupt){
+		printf("Interupt!: %i \n\r", mcp2515_interrupt_flags);
+		printf("Receive: %i \n\r", value);
+		can_is_interrupt = 0;	
+	}
 	//printf("CAN Transmit: ID: %i LEN: %i DATA: %i \n\r",test_message.id, test_message.data_length, test_message.data[0]);
 
 	

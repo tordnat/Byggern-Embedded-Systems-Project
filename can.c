@@ -13,6 +13,8 @@ Plan:
 - Should be done with function pointers to eliminate boilerplate code
 */
 
+static can_message_t receive_buffer;
+
 uint8_t can_message_transmit(can_message_t* message){
 	mcp2515_transmit_tx0(message);
 	return 0;

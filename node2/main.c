@@ -85,8 +85,9 @@ int main()
 
     PIOA->PIO_CODR = PIO_SODR_P20 | PIO_SODR_P19;
 
-    //Bitrate: 500kHz, 10 TQ per Nominal bit time, NBT=200ns
-    uint32_t can_br = (15 << CAN_BR_BRP_Pos) | (3 << CAN_BR_SJW_Pos) | (6 << CAN_BR_PROPAG_Pos) | (3 << CAN_BR_PHASE1_Pos) | (3 << CAN_BR_PHASE2_Pos);
+    //Bitrate: 500kHz, 200ns
+    //4TQ SJW, 7TQ TPROP, 4TQ PHASE1, 4TQ PHASE2
+    uint32_t can_br = ((16-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
     //Tx = 1, RX = 2
     if(can_init_def_tx_rx_mb(can_br)) {
         printf("Can failed init\n\r");

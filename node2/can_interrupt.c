@@ -28,7 +28,7 @@
  */
 void CAN0_Handler( void )
 {
-	if(DEBUG_INTERRUPT)printf("CAN0 interrupt\n\r");
+	//if(DEBUG_INTERRUPT)printf("CAN0 interrupt\n\r");
 	char can_sr = CAN0->CAN_SR; 
 	
 	//RX interrupt
@@ -61,7 +61,7 @@ void CAN0_Handler( void )
 	
 	if(can_sr & CAN_SR_MB0)
 	{
-		if(DEBUG_INTERRUPT) printf("CAN0 MB0 ready to send \n\r");
+		//if(DEBUG_INTERRUPT) printf("CAN0 MB0 ready to send \n\r");
 		
 	//Disable interrupt
 		CAN0->CAN_IDR = CAN_IER_MB0;

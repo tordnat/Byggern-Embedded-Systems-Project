@@ -9,7 +9,7 @@
 
 
 void spi_master_init(void){
-	DDRB |= 1 << DDB4; //Set SS port output
+	DDRB = (1 << DDB5) | (1 << DDB7) | (1 << DDB4); //Set SS port output
 	// Set SCK and MOSI output, all others input
 	DDR_SPI |= (1 <<DD_MOSI) | (1<<DD_SCK);
 	// Enable SPI, Master, set clock rate at fck/16
@@ -27,11 +27,4 @@ void spi_transmit(char cData){
 uint8_t spi_read(void){
 	spi_transmit('U'); //Don't care
 	return SPDR;
-}
-
-
-void spi_transmit_string(char* string, int length){ //length in bytes
-	for (int i = 0; i <= length; i++){
-		spi_transmit(string[i]);
-	}
 }

@@ -171,21 +171,19 @@ Copyright 2003 Kimberly Otten Software Consulting
 
 // Global variables
 
-#define MCP_INIT_MODE MODE_LOOPBACK
 #define MCP_MAX_DATA_LENGTH 0x8
-#define MCP_BRP			0x00
-#define MCP_SJW			0x03
-#define MCP_PRSEG		0X06
-#define MCP_PHSEG1		0x03
-#define MCP_PHSEG2		0x03
+#define MCP_BRP			(4-1)
+#define MCP_SJW			(0x3) //0b11 == 4TQ
+#define MCP_PRSEG		(7-1)
+#define MCP_PHSEG1		(4-1)
+#define MCP_PHSEG2		(4-1)
 // Globals
 
 uint8_t mcp2515_init(void);
 uint8_t mcp2515_transmit_tx0(can_message_t* message);
 uint8_t mcp2515_read_rx0(can_message_t* message_buffer);
 uint8_t mcp2515_read_status(uint8_t status_mask);
-
-
-
+uint8_t mcp2515_read(uint8_t address);
+uint8_t mcp2515_write(uint8_t address, uint8_t value);
 
 #endif

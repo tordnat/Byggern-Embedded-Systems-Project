@@ -6,12 +6,9 @@
 #include "can_interrupt.h"
 #include "sam/sam3x/include/sam.h"
 
-
 #define LED1 23
 #define LED2 19
-
-
-
+#define MCK 84000000
 
 #define PWM_PERIOD 1641
 #define PWM_SERVO_DUTY_MIN 82
@@ -71,27 +68,27 @@ int main()
 {
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
+    configure_uart();
+    printf("Hello World\n\r");
+    
+    PIOA->PIO_WPMR &= ~PIO_WPMR_WPEN;	//Write protect disable
+    PMC->PMC_PCER0 |= PMC_PCER0_PID11; //Enable clock for PIOA
 
-    PIOA -> PIO_WPMR &= ~PIO_WPMR_WPEN;	
-    PMC->PMC_PCER0 |= PMC_PCER0_PID11;
     //PMC->PMC_PCER1 = PMC_PCER1_PID33;
     PIOA->PIO_PER |= PIO_PER_P19; //enable pin
     PIOA->PIO_OER |= PIO_OER_P19; //enable output
-    PIOA->PIO_PER |= PIO_PER_P23; //enable pin
-    PIOA->PIO_OER |= PIO_OER_P23; //enable output
-    PIOA->PIO_SODR |= PIO_SODR_P19;
-    PIOA->PIO_SODR |= PIO_SODR_P23;
+    PIOA->PIO_SODR |= PIO_SODR_P19; //Set output data
 
     PIOA->PIO_PER |= PIO_PER_P20; //enable pin
     PIOA->PIO_OER |= PIO_OER_P20; //enable output
-
     PIOA->PIO_SODR |= PIO_SODR_P20; //Set output data
 
     PIOA->PIO_CODR = PIO_SODR_P20 | PIO_SODR_P19;
 
-    //Bitrate: 500kHz, 200ns
     //4TQ SJW, 7TQ TPROP, 4TQ PHASE1, 4TQ PHASE2
-    uint32_t can_br = ((16-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
+    uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
+    //uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((2-1) << CAN_BR_SJW_Pos) | ((2-1) << CAN_BR_PROPAG_Pos) | ((8-1) << CAN_BR_PHASE1_Pos) | ((7-1) << CAN_BR_PHASE2_Pos);
+
     //Tx = 1, RX = 2
     if(can_init_def_tx_rx_mb(can_br)) {
         printf("Can failed init\n\r");
@@ -104,27 +101,28 @@ int main()
     msg.data[0] = 'u';
     msg.data_length = 1;
     msg.id = 40;
-    
+
     pwm_init();
     adc_init();
     printf("Finished init\n\r");
-
     while (1) {
             for(int j = -100; j < 101; j++) {
                 for(int i = 0; i < 20000000; i++) {
-                    volatile int x = i;  
+                    __asm__("nop");
                 }
+                /*
                 pwm_servo_set_pos(j);
-                printf("Sendning can message\n\r");
+                printf("Attempting to send can message\n\r");
+
                 int err = can_send(&msg, 0);
                 if(err) {
                     printf("Can failed to send, error: %d \n\r", err);
                 } else {
                     printf("Succesfully sent\n\r");
                 }
+                */
+
             }   
     }
-
     //BAUD = T_q * bitrate
-
 }

@@ -101,6 +101,7 @@ int main()
     msg.data[0] = 'u';
     msg.data_length = 1;
     msg.id = 40;
+
     pwm_init();
     adc_init();
     printf("Finished init\n\r");
@@ -112,6 +113,7 @@ int main()
                 /*
                 pwm_servo_set_pos(j);
                 printf("Attempting to send can message\n\r");
+
                 int err = can_send(&msg, 0);
                 if(err) {
                     printf("Can failed to send, error: %d \n\r", err);
@@ -119,6 +121,7 @@ int main()
                     printf("Succesfully sent\n\r");
                 }
                 */
+
             }   
     }
     //BAUD = T_q * bitrate

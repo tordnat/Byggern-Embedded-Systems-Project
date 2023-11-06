@@ -12,13 +12,13 @@
 
 #include <stdio.h>
 #include "sam.h"
-
+#include "pwm.h"
 #include "../uart_and_printf/printf-stdarg.h"
 
 #include "can_controller.h"
 
-#define DEBUG_INTERRUPT 1
-
+#define DEBUG_INTERRUPT 0
+int8_t prev_pos_g = 0;
 /**
  * \brief CAN0 Interrupt handler for RX, TX and bus error interrupts
  *
@@ -53,9 +53,18 @@ void CAN0_Handler( void )
 		if(DEBUG_INTERRUPT)printf("message id: %d\n\r", message.id);
 		if(DEBUG_INTERRUPT)printf("message data length: %d\n\r", message.data_length);
 		for (int i = 0; i < message.data_length; i++)
-		{
-			if(DEBUG_INTERRUPT)printf("%d ", message.data[i]);
+		{	
+			int8_t test = message.data[i];
+			if(DEBUG_INTERRUPT)printf("%d ", test);
 		}
+
+		//Very temp
+		if(message.id == 0x66) {
+			int8_t pos = message.data[0];
+			pwm_servo_set_pos(pos, prev_pos_g);
+			prev_pos_g = pos;
+		}
+
 		if(DEBUG_INTERRUPT)printf("\n\r");
 	}
 	

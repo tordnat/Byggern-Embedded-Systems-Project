@@ -2,7 +2,7 @@ LDSCRIPT = sam/flash.ld
 BOOTUP = sam/sam3x/source/exceptions.c sam/sam3x/source/startup_sam3x.c sam/sam3x/source/system_sam3x.c
 MCUTYPE = __SAM3X8E__
 # List all source files to be compiled; separate with space
-SOURCE_FILES=$(BOOTUP) main.c uart_and_printf/uart.c uart_and_printf/printf-stdarg.c can_interrupt.c can_controller.c
+SOURCE_FILES=$(BOOTUP) main.c uart_and_printf/uart.c uart_and_printf/printf-stdarg.c can_interrupt.c can_controller.c pwm.c adc.c timer.c
 
 # Feel free to ignore anything below this line
 VPATH:= $(dir $(SOURCE_FILES))
@@ -20,6 +20,7 @@ LDFLAGS:= -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,--gc-sections
 CFLAGS:= -mcpu=cortex-m3 -mthumb -g -std=c11 -MMD
 CFLAGS+= -I sam -I sam/sam3x/include -I sam/sam3x/source -I sam/cmsis -I .
 CFLAGS+= -D $(MCUTYPE)
+CFLAGS+= -Wall
 
 .DEFAULT_GOAL := $(ELF)
 # compile and generate dependancy info
@@ -54,6 +55,10 @@ flash: $(ELF)
 	#./sam/write_bin.sh sam/openocd.cfg $(BUILD_DIR)/main.elf
 	if pgr openocd; then killall -s 9 openocd; fi
 	openocd -f sam/openocd.cfg -c "program ${BUILD_DIR}/main.elf verify reset exit"
+
+#.PHONY: build
+#build: $(ELF)
+#	#./sam/write_bin.sh sam/openocd.cfg $(BUILD_DIR)/main.elf
 
 
 # pull in dependencies

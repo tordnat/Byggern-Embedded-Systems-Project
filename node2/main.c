@@ -18,7 +18,7 @@ int main()
     configure_uart();
     pwm_init();
     adc_init();
-    adc_init_interrupt();
+    //adc_init_interrupt();
     uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
 
     //Tx = 1, RX = 2
@@ -26,9 +26,8 @@ int main()
         printf("Can failed init\n\r");
     }
     printf("Everything inited\n\r");
-    printf("ADC: %d\n\r", adc_read());
-    NVIC_SetPendingIRQ(ID_ADC);
-    printf("Pending interrupts %x\n\r", NVIC_GetActive(ID_ADC));
+    printf("%d", adc_read());
+    printf("Enabled interrupt? %x\n\r", NVIC_GetEnableIRQ(ADC_IRQn));
     
     while (1) {
     }

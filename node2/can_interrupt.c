@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include "sam.h"
-
+#include "pwm.h"
 #include "../uart_and_printf/printf-stdarg.h"
 
 #include "can_controller.h"
@@ -59,7 +59,7 @@ void CAN0_Handler( void )
 		}
 
 		//Very temp
-		if(message.id = 0x42) {
+		if(message.id == 0x42) {
 			int8_t test = message.data[0];
 			pwm_servo_set_pos(test);
 		}

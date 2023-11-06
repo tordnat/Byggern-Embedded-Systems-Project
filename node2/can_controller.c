@@ -13,6 +13,7 @@
 #include "sam/sam3x/include/sam.h"
 
 #include "../uart_and_printf/printf-stdarg.h"
+#define GOAL_CAN_ID 0
 
 
 /**
@@ -204,4 +205,14 @@ uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t rx_mb_id)
 	{
 		return 1;
 	}
+}
+
+void encode_can_msg(CAN_MESSAGE* msg, node2_msg data) {
+    msg->data[0] = data.goal;
+    msg->data_length = sizeof(msg->data);
+    msg->id = GOAL_CAN_ID;
+}
+void decode_can_msg(CAN_MESSAGE* msg, node2_msg *data) {
+    data->goal = msg->data[0];
+
 }

@@ -42,7 +42,7 @@ void pwm_servo_set_pos(int8_t pos, int8_t prev_pos) {
     pos = -pos; // To map joystick direction to intuitive servo direction
     //Invalid position
     if((pos < -100) || (pos > 100)) {
-        printf("Pos outside valid range\n\r");
+        printf("Pos outside valid range %d\n\r", pos);
         return; //add error code
     }
     //TODO: add smoothing

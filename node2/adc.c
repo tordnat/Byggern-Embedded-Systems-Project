@@ -8,7 +8,7 @@ void adc_init() {
     //PIOA->PIO_WPMR &= ~PIO_WPMR_WPEN; //Disable write protection for PIOA
     ADC->ADC_MR |= (ADC_MR_PRESCAL_Msk & 90) | ADC_MR_TRGEN_DIS;
     
-    ADC->ADC_CHER |= ADC_CHER_CH0; //Enable channel 0 (CH0 => pin == PA2)
+    ADC->ADC_CHER |= ADC_CHER_CH0; //Enable channel 0 (CH0 => pin == PA2 == A7 på due)
 }
 
 uint16_t adc_read() {

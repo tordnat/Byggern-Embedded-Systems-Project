@@ -45,7 +45,7 @@ void pwm_servo_set_pos(int8_t pos, int8_t prev_pos) {
         printf("Pos outside valid range\n\r");
         return; //add error code
     }
-    //Position to duty cycle calulation
+    //TODO: add smoothing
     if(pos == prev_pos) {
         return;
     }

@@ -33,21 +33,21 @@ uint8_t mcp2515_init(){
 	mcp2515_write(MCP_CNF1, (MCP_SJW << 6) | MCP_BRP );
 	
 	
-	//mcp2515_bit_modify(MCP_RXB0CTRL, MCP_RX_FILTER_MASK, 0x60); //Accept all msgs
-	//mcp2515_write(MCP_RXB1CTRL, 0x0);
+	mcp2515_bit_modify(MCP_RXB0CTRL, MCP_RX_FILTER_MASK, 0x60); //Accept all msgs
+	mcp2515_write(MCP_RXB1CTRL, 0x0);
 	// Enable interrupt on receive
-	//mcp2515_write(MCP_CANINTE, 0x01); //Interrupt on message received in RXB0
-	mcp2515_bit_modify(MCP_CANCTRL, MODE_MASK, MODE_NORMAL); // Setting initial mode
+	mcp2515_write(MCP_CANINTE, 0x01); //Interrupt on message received in RXB0
+	mcp2515_bit_modify(MCP_CANCTRL, MODE_MASK, MODE_ONESHOT); // Setting initial mode
 	mcp2515_bit_modify(MCP_CANINTE, 0x1 | 0x2, 0xFF); //Set bits RX1IF and RX0IF HIGH
 	// Set initial mode
 	return 0;
 }
 
 uint8_t mcp2515_transmit_tx0(can_message_t* message){
-	//if(mcp2515_read_status(STATUS_TX0REQ)){
-	//	printf("Err: TX0 Request Flag set \n\r");
-	//	return 1;
-	//}
+	if(mcp2515_read_status(STATUS_TX0REQ)){
+		printf("Err: TX0 Request Flag set \n\r");
+		return 1;
+	}
 	mcp2515_load_tx0_buffer(message);
 	mcp2515_request_to_send(MCP_RTS_ALL);
 	return 0;
@@ -120,10 +120,10 @@ uint8_t mcp2515_write(uint8_t address, uint8_t value){
 	spi_transmit(value);	 //Send value
 	mcp2515_disable();
 	
-	//if(mcp2515_register_verify(address, value, 0xFF)){
-	//	printf("ERR: Unexpected value verifying\n\r");
-	//	return 1;
-	//}
+	if(mcp2515_register_verify(address, value, 0xFF)){
+		printf("ERR: Unexpected value verifying\n\r");
+		return 1;
+	}
 	
 	return 0;
 }

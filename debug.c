@@ -4,7 +4,7 @@
 #include "joystick.h"
 #include "oled.h"
 
-void debug_print_joystick_directions(direction joystick_dir) {
+void debug_print_joystick_directions(direction_t joystick_dir) {
 	oled_print_str("     ");
 	if(joystick_dir == DOWN) {
 		printf("DOWN\n\r");

@@ -104,7 +104,7 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 	}
 }
 
-void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction *joystick_dir_ptr, direction *prev_joystick_dir_ptr) {
+void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction_t *joystick_dir_ptr, direction_t *prev_joystick_dir_ptr) {
 	/*
 	direction tmp_joystick_dir = * joystick_dir_ptr;
 	direction tmp_joystick_dir_prev = * prev_joystick_dir_ptr;

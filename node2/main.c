@@ -8,7 +8,7 @@
 #include "sam/sam3x/include/sam.h"
 #include "pwm.h"
 #include "adc.h"
-
+#include "solenoid.h"
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
@@ -26,6 +26,7 @@ uint8_t goal_scored() {
     }
 }
 
+
 int main()
 {
     SystemInit();
@@ -33,6 +34,8 @@ int main()
     configure_uart();
     pwm_init();
     adc_init();
+    solenoid_init();
+
     //adc_init_interrupt();
     uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
 
@@ -56,8 +59,12 @@ int main()
             encode_can_msg(&msg, data);
             printf("%d",can_send(&msg, CAN_TX_MAILBOX_ID));
 
+            //solenoid_on();
             //Add delay here to register goal
-            for(int i = 0; i < 10000000; i++) {__asm__("nop");}
+            for(int i = 0; i < 5000000; i++) {__asm__("nop");}
+            //solenoid_off();
+            for(int i = 0; i < 5000000; i++) {__asm__("nop");}
+
         }
         
     }

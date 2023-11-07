@@ -14,7 +14,7 @@
 #include "sam.h"
 #include "pwm.h"
 #include "../uart_and_printf/printf-stdarg.h"
-
+#include "solenoid.h"
 #include "can_controller.h"
 
 #define DEBUG_INTERRUPT 0
@@ -63,6 +63,13 @@ void CAN0_Handler( void )
 			int8_t pos = message.data[0];
 			pwm_servo_set_pos(pos, prev_pos_g);
 			prev_pos_g = pos;
+			//x, y, btn, slider.
+			uint8_t btn = message.data[2];
+			if(btn) {
+				solenoid_on();
+			} else {
+				solenoid_off();
+			}
 		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");

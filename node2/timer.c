@@ -4,17 +4,18 @@
 #include "uart_and_printf/uart.h"
 #include "uart_and_printf/printf-stdarg.h"
 #include "sam/sam3x/include/sam.h"
+#include "timer.h"
 
+//not finished
 void timer_init() {
+    TC0->TC_WPMR  &= ~TC_WPMR_WPEN; //Write protect
+    
+    TC0->TC_CHANNEL[0].TC_CCR |= TC_CCR_CLKEN;
+    TC0->TC_CHANNEL[0].TC_CMR |= TC_CMR_TCCLKS_TIMER_CLOCK4;
 
-    //TC0->TC_CHANNEL[0].TC_CCR |= 
-
-    PWM->PWM_WPCR &= ~PIO_WPMR_WPEN; //Disable write protection for PWM
     PMC->PMC_PCER1 |= PMC_PCER1_PID36; //Enable clock for PWM module PWM PID == 36
-    PIOC->PIO_WPMR &= ~PIO_WPMR_WPEN; //Disable write protect for PIOC
+}
 
-    PIOC->PIO_ABSR |= PIO_ABSR_P19; //Periphiral select B for pin 19
-    PIOC->PIO_PDR |= PIO_PDR_P19; //Disable GPIO functionality
-
-
+int timer_read() {
+    return TC0->TC_CHANNEL[0].TC_CV;
 }

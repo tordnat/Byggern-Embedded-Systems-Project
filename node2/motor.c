@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include "sam/sam3x/include/sam.h"
 #include "dac.h"
-
+#include "timer.h"
 #define MOTOR_EN_PIN PIO_PD9
 #define MOTOR_DIR_PIN PIO_PD10
 
@@ -13,10 +13,10 @@
 //PIN27
 #define ENCODER_SEL_LOW_BYTE_PIN PIO_PD2
 
-#define BRAKE_PIN 
 
 
 //1 left, 0 right 
+
 void motor_init() {
     PIOD->PIO_WPMR &= ~PIO_WPMR_WPEN; //Write protect disable
     PMC->PMC_PCER0 |= PMC_PCER0_PID14; //Enable clock for PIOD
@@ -44,17 +44,50 @@ void motor_set_speed(uint8_t direction, uint16_t speed) {
     }
     dac_write(speed);
 }
+void motor_set_mapped_speed(int32_t speed) {
+    int abs_speed;
+    if(speed > 0) {
+        abs_speed = speed*2;
+    } else {
+        abs_speed = -speed*2;
+    }
+    if((abs_speed > 4095)) {
+        abs_speed = 4090;
+    }
+    if(abs_speed < 500) {
+        abs_speed *= 3;
+    }
+    if(abs_speed < 250) {
+        abs_speed *= 6;
+    }
+
+    if(speed < 0) {
+        motor_set_speed(0, abs_speed);
+    }
+    else if(speed > 0) {
+        motor_set_speed(1, abs_speed);
+    } else {
+        motor_set_speed(0, 0);
+    }
+}
+
 //0 to 100
 void motor_set_pos() {
 
 }
 
+#define DIR PIO_PD10
+#define EN PIO_PD9
+#define SEL PIO_PD2
+#define NOT_RST PIO_PD1
+#define NOT_OE PIO_PD0
+#define BUTTON PIO_PD6
+#define DO_MASK (0xFF << 1)
+
+
 void encoder_init() {
     PIOD->PIO_WPMR &= ~PIO_WPMR_WPEN; //Write protect disable
     PMC->PMC_PCER0 |= PMC_PCER0_PID14; //Enable clock for PIOD
-    //init mj2
-    PIOC->PIO_WPMR &= ~PIO_WPMR_WPEN;
-    PMC->PMC_PCER0 |= PMC_PCER0_PID13; 
     PIOD->PIO_PER |= ENCODER_OUT_EN_PIN | ENCODER_RST_PIN | ENCODER_SEL_LOW_BYTE_PIN; //enable pin
     PIOD->PIO_OER |= ENCODER_OUT_EN_PIN | ENCODER_RST_PIN | ENCODER_SEL_LOW_BYTE_PIN; //enable output
     PIOD->PIO_SODR = ENCODER_OUT_EN_PIN | ENCODER_RST_PIN; //RST and OE active low
@@ -62,45 +95,47 @@ void encoder_init() {
     PIOD->PIO_CODR = ENCODER_OUT_EN_PIN | ENCODER_SEL_LOW_BYTE_PIN;
 
     
+    //init mj2
+    PIOC->PIO_WPMR &= ~PIO_WPMR_WPEN;
+    PMC->PMC_PCER0 |= PMC_PCER0_PID13; 
 
     PIOC->PIO_PER |= PIO_PC1 | PIO_PC2 | PIO_PC3 | PIO_PC4 | PIO_PC5 | PIO_PC6 | PIO_PC7 | PIO_PC8;
     //Input only
-    PIOC->PIO_PDR |= PIO_PC1 | PIO_PC2 | PIO_PC3 | PIO_PC4 | PIO_PC5 | PIO_PC6 | PIO_PC7 | PIO_PC8;
-
+    PIOC->PIO_ODR |= PIO_PC1 | PIO_PC2 | PIO_PC3 | PIO_PC4 | PIO_PC5 | PIO_PC6 | PIO_PC7 | PIO_PC8;
 
 }
+
+
 //Reads bits 1-8 in port C
 static uint8_t mj2_read() {
-    /*
-    uint32_t bit0 = (PIOC->PIO_PDSR & PIO_PC1);
-    uint32_t bit1 = (PIOC->PIO_PDSR & PIO_PC2);
-    uint32_t bit2 = (PIOC->PIO_PDSR & PIO_PC3);
-    uint32_t bit3 = (PIOC->PIO_PDSR & PIO_PC4);
-    uint32_t bit4 = (PIOC->PIO_PDSR & PIO_PC5);
-    uint32_t bit5 = (PIOC->PIO_PDSR & PIO_PC6);
-    uint32_t bit6 = (PIOC->PIO_PDSR & PIO_PC7);
-    uint32_t bit7 = (PIOC->PIO_PDSR & PIO_PC8);
-
-
-    uint8_t byte = bit0 | (bit1 << 1) | (bit2 << 2) | (bit3 << 3) | (bit4 << 4) | (bit5 << 5) | (bit6 << 6) | (bit7 << 7);
-    return byte;
-    */
-    return ((PIOC->PIO_PDSR >> 1) & 0xFF);
+    return (((PIOC->PIO_PDSR & (0xFF << 1)) >> 1));
 }
-uint16_t encoder_read() {
+int16_t encoder_read() {
     PIOD->PIO_CODR |= ENCODER_OUT_EN_PIN;
     PIOD->PIO_CODR |= ENCODER_SEL_LOW_BYTE_PIN;
 
-    delay(20);
+    delay_us(20);
 
-    uint8_t high_byte = mj2_read();
+    int high_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_SEL_LOW_BYTE_PIN;
 
-    delay(20);
+    delay_us(20);
 
-    uint8_t low_byte = mj2_read();
+    int low_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_OUT_EN_PIN;
     
     return ((high_byte << 8) | (low_byte));
 }
 
+void encoder_reset() {
+    PIOD->PIO_CODR = ENCODER_RST_PIN;
+    delay_us(20);
+    PIOD->PIO_SODR = ENCODER_RST_PIN;
+}
+
+void motor_calibrate() {
+    motor_set_speed(0, 2500);
+    delay_us(2000000);
+    motor_set_speed(1, 0);
+    encoder_reset();
+}

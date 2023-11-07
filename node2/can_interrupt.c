@@ -59,9 +59,10 @@ void CAN0_Handler( void )
 		}
 
 		//Very temp
+		/*
 		if(message.id == 0x66) {
 			int8_t pos = message.data[0];
-			//pwm_servo_set_pos(pos, prev_pos_g);
+			pwm_servo_set_pos(pos, prev_pos_g);
 			prev_pos_g = pos;
 			//x, y, btn, slider.
 			uint8_t btn = message.data[2];
@@ -71,6 +72,10 @@ void CAN0_Handler( void )
 				solenoid_off();
 			}
 		}
+		*/
+	if(message.id == 0x66) {
+		
+	}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");
 	}

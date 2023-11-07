@@ -18,7 +18,9 @@
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
 
-
+int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
+  return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 uint8_t goal_scored() {
     uint16_t adc_val = adc_read();
@@ -30,24 +32,6 @@ uint8_t goal_scored() {
     }
 }
 
-void delay(uint32_t us){
-	uint32_t ticks = (MCK / 1000000) * us;
-	if(ticks > 0xFFFFFF) {
-		ticks = 0xFFFFFF;
-    }
-	SysTick->LOAD = ticks - 1;
-	SysTick->VAL = 0;
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
-	
-	while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)) {
-		// Wait for the SysTick timer to count down
-	}
-	
-	SysTick->CTRL = 0; // Disable the SysTick timer
-}
-
-
-
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
@@ -57,13 +41,17 @@ void delay(uint32_t us){
   ((byte) & 0x08 ? '1' : '0'), \
   ((byte) & 0x04 ? '1' : '0'), \
   ((byte) & 0x02 ? '1' : '0'), \
-  ((byte) & 0x01 ? '1' : '0') 
+  ((byte) & 0x01 ? '1' : '0')
+
+
+int ref_pos = 90;
+int sum_e = 0;
 int main()
 {
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
     configure_uart();
-    //pwm_init();
+    pwm_init();
     adc_init();
     solenoid_init();
     dac_init();
@@ -77,13 +65,10 @@ int main()
     }
     printf("Everything inited\n\r");
     printf("ADC: %d\n\r", adc_read());
-    printf("Enabled interrupt? %x\n\r", NVIC_GetEnableIRQ(ADC_IRQn));
-    for(int i = 0; i < 10000000; i++) {__asm__("nop");}
+    //printf("Enabled interrupt? %x\n\r", NVIC_GetEnableIRQ(ADC_IRQn));
     printf("Starting game\n\r");
 
-
-    motor_set_speed(1, 0);
-
+    motor_calibrate();
     
     while (1) {
         //printf("ADC: %d\n\r", adc_read());
@@ -104,10 +89,25 @@ int main()
             //motor_set_speed(1, 1500);
             //delay(100000);
             //motor_set_speed(0, 1500);
-            delay(1000000);
-            encoder_read();
-            printf("Leading text %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
-            printf("encoder %d\n\r", encoder_read());
+            delay_us(10);
+            int16_t pos = encoder_read();
+            int8_t mapped_pos = map(pos, 0, 1407, 0, 100);
+            int e = ref_pos - mapped_pos;
+            if((sum_e < 3000) && (sum_e > -3000)) {
+                sum_e += e/3;
+                if(e < 3) {
+                    sum_e += e;
+                }
+            }
+            
+            motor_set_mapped_speed(e*20+sum_e);
+            //Total range == 1407 steps of encoder
+            if(e == 0) {
+                motor_set_mapped_speed(0);
+            }
+            printf("e %d sum %d \n\r", e, sum_e);
+            //printf("Leading text %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
+            //printf("encoder %d\n\r", encoder_read());
         //}
     }
 }

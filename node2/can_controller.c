@@ -207,12 +207,15 @@ uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t rx_mb_id)
 	}
 }
 
-void encode_can_msg(CAN_MESSAGE* msg, node2_msg data) {
+void encode_can_msg2(CAN_MESSAGE* msg, node2_msg data) {
     msg->data[0] = data.goal;
     msg->data_length = sizeof(msg->data);
     msg->id = GOAL_CAN_ID;
 }
-void decode_can_msg(CAN_MESSAGE* msg, node2_msg *data) {
-    data->goal = msg->data[0];
 
+void decode_can_msg1(CAN_MESSAGE* msg, node1_msg *data) {
+    data->joystickX = msg->data[0];
+	data->joystickY = msg->data[1];
+	data->btn = msg->data[2];
+	data->slider = msg->data[3];
 }

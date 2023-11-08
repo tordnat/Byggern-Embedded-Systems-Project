@@ -17,6 +17,12 @@
 #include "solenoid.h"
 #include "can_controller.h"
 
+static node1_msg node1_buffer;
+
+node1_msg get_node1_msg(void) {
+	return node1_buffer;
+}
+
 #define DEBUG_INTERRUPT 0
 int8_t prev_pos_g = 0;
 /**
@@ -73,9 +79,11 @@ void CAN0_Handler( void )
 			}
 		}
 		*/
-	if(message.id == 0x66) {
-		
-	}
+		if(message.id == 0x66) {
+			//printf("Recieved from 0x66\n\r");
+			decode_can_msg1(&message , &node1_buffer);
+			//printf("Data %d %d %d %d %d \n\r", message.data_length, message.data[0], message.data[1], message.data[2], message.data[3]);
+		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");
 	}

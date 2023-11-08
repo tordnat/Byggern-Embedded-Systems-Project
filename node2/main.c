@@ -17,6 +17,7 @@
 #define LED2 19
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
+#define K_P 70
 
 int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
   return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -43,9 +44,23 @@ uint8_t goal_scored() {
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0')
 
+int regulator(int ref) {
+    int max_steps_encoder = 1407;
+    int encoder_val = encoder_read();
+    int8_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
+    int e = current_pos - ref;
 
-int ref_pos = 90;
-int sum_e = 0;
+    
+
+    int u = K_P*e;
+    printf("e u %d %d\n\r", e, u);
+    motor_set_mapped_speed(u);
+    return e;
+}
+
+
+int ref_pos = 50;
+int prev_e = 0;
 int main()
 {
     SystemInit();
@@ -57,6 +72,7 @@ int main()
     dac_init();
     motor_init();
     encoder_init();
+    timer_init();
     //adc_init_interrupt();
     uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
     //Tx = 0, RX = 1 or 2
@@ -71,13 +87,22 @@ int main()
     motor_calibrate();
     
     while (1) {
+        //Return 
+       if(get_reg_tick()) {
+            ref_pos = get_node1_msg().slider;
+            regulator(ref_pos);
+            prev_e = regulator(ref_pos);
+            NVIC_DisableIRQ(TC0_IRQn);
+            set_reg_tick();
+            NVIC_EnableIRQ(TC0_IRQn);
+       }
         //printf("ADC: %d\n\r", adc_read());
         //if(!goal_scored()) {
-            node2_msg data;
-            data.goal = 1;
+            //node2_msg data;
+            //data.goal = 1;
             //printf("timer %d\n\r", timer_read());
             
-            CAN_MESSAGE msg;
+            //CAN_MESSAGE msg;
             //encode_can_msg(&msg, data);
             //encode_can_msg(&msg, data);
             //printf("%d",can_send(&msg, CAN_TX_MAILBOX_ID));
@@ -89,8 +114,11 @@ int main()
             //motor_set_speed(1, 1500);
             //delay(100000);
             //motor_set_speed(0, 1500);
-            delay_us(10);
+            /*
+            ref_pos = get_node1_msg().slider;
+            delay_us(100);
             int16_t pos = encoder_read();
+            //printf("Pos encoder: %d\n\r", pos);
             int8_t mapped_pos = map(pos, 0, 1407, 0, 100);
             int e = ref_pos - mapped_pos;
             if((sum_e < 3000) && (sum_e > -3000)) {
@@ -102,12 +130,15 @@ int main()
             
             motor_set_mapped_speed(e*20+sum_e);
             //Total range == 1407 steps of encoder
-            if(e == 0) {
-                motor_set_mapped_speed(0);
-            }
-            printf("e %d sum %d \n\r", e, sum_e);
-            //printf("Leading text %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
-            //printf("encoder %d\n\r", encoder_read());
+            */
+            
+            //if(e == 0) {
+            //    motor_set_mapped_speed(0);
+            //}
+            //printf("e %d sum %d \n\r", e, sum_e);
+            //printf("Encoder %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
+            //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
+
         //}
     }
 }

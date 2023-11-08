@@ -47,25 +47,19 @@ void motor_set_speed(uint8_t direction, uint16_t speed) {
 void motor_set_mapped_speed(int32_t speed) {
     int abs_speed;
     if(speed > 0) {
-        abs_speed = speed*2;
+        abs_speed = speed;
     } else {
-        abs_speed = -speed*2;
+        abs_speed = -speed;
     }
     if((abs_speed > 4095)) {
         abs_speed = 4090;
     }
-    if(abs_speed < 500) {
-        abs_speed *= 3;
-    }
-    if(abs_speed < 250) {
-        abs_speed *= 6;
-    }
 
     if(speed < 0) {
-        motor_set_speed(0, abs_speed);
+        motor_set_speed(1, abs_speed);
     }
     else if(speed > 0) {
-        motor_set_speed(1, abs_speed);
+        motor_set_speed(0, abs_speed);
     } else {
         motor_set_speed(0, 0);
     }
@@ -114,12 +108,12 @@ int16_t encoder_read() {
     PIOD->PIO_CODR |= ENCODER_OUT_EN_PIN;
     PIOD->PIO_CODR |= ENCODER_SEL_LOW_BYTE_PIN;
 
-    delay_us(20);
+    delay_us(30);
 
     int high_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_SEL_LOW_BYTE_PIN;
 
-    delay_us(20);
+    delay_us(30);
 
     int low_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_OUT_EN_PIN;

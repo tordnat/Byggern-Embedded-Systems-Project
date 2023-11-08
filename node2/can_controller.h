@@ -27,17 +27,18 @@ uint8_t can_init(uint32_t can_br, uint8_t num_tx_mb, uint8_t num_rx_mb);
 uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
 uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t mailbox_id);
 
-typedef struct node1_msg_t {
-    int8_t adc_val; // -100 - 100
-    char reserved[7];
+typedef struct node1_msg {
+    int8_t joystickX;
+	int8_t joystickY;
+	uint8_t btn;
+	uint8_t slider;
 } node1_msg;
 
-typedef struct node2_msg_t {
-	uint8_t goal; //binary
-    char reserved[7];
+typedef struct node2_msg {
+	uint8_t goal;
 } node2_msg;
-
-void encode_can_msg(CAN_MESSAGE* msg, node2_msg data);
-void decode_can_msg(CAN_MESSAGE* msg, node2_msg *data);
+node1_msg get_node1_msg(void);
+void encode_can_msg2(CAN_MESSAGE* msg, node2_msg data);
+void decode_can_msg1(CAN_MESSAGE* msg, node1_msg *data);
 
 #endif /* CAN_CONTROLLER_H_ */

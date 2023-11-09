@@ -18,7 +18,7 @@
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
 #define K_P 70
-#define K_I (float) 20000
+#define K_I (float) 2000
 
 int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
   return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -56,11 +56,11 @@ void regulator(int ref) {
     int e = current_pos - ref;
     sum_e += e;
     int u = K_P*e + 0.0001*K_I*sum_e;
-    printf("e u e_sum %d %d %d\n\r", e, u, (int) sum_e);
+    //printf("e u e_sum %d %d %d\n\r", e, u, (int) sum_e);
     motor_set_mapped_speed(u);
 }
 
-
+int prev_servo_pos = 0;
 int main()
 {
     SystemInit();
@@ -80,7 +80,7 @@ int main()
         printf("Can failed init\n\r");
     }
     printf("Everything inited\n\r");
-    printf("ADC: %d\n\r", adc_read());
+    //printf("ADC: %d\n\r", adc_read());
     //printf("Enabled interrupt? %x\n\r", NVIC_GetEnableIRQ(ADC_IRQn));
     printf("Starting game\n\r");
 
@@ -89,12 +89,23 @@ int main()
     while (1) {
         //Return 
        if(get_reg_tick()) {
-            ref_pos = get_node1_msg().slider;
+            ref_pos = (get_node1_msg().joystickX+100)/2;
             regulator(ref_pos);
             NVIC_DisableIRQ(TC0_IRQn);
             set_reg_tick();
             NVIC_EnableIRQ(TC0_IRQn);
+            pwm_servo_set_pos((get_node1_msg().slider-50)*2, prev_servo_pos);
+            prev_servo_pos = (((int)get_node1_msg().slider)-50)*2;
+            if(adc_read() < 900) {
+                printf("Goal active\n\r");
+            }
+            if(get_node1_msg().btn) {
+                solenoid_on();
+            } else {
+                solenoid_off();
+            }
        }
+       
         //printf("ADC: %d\n\r", adc_read());
         //if(!goal_scored()) {
             //node2_msg data;
@@ -105,11 +116,13 @@ int main()
             //encode_can_msg(&msg, data);
             //encode_can_msg(&msg, data);
             //printf("%d",can_send(&msg, CAN_TX_MAILBOX_ID));
-
-            //solenoid_on();
+            /*
+            delay_us(1000000);
+            solenoid_on();
+            delay_us(1000000);
             //Add delay here to register goal
-            //solenoid_off();
-            
+            solenoid_off();
+            */
             //motor_set_speed(1, 1500);
             //delay(100000);
             //motor_set_speed(0, 1500);

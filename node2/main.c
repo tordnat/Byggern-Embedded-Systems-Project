@@ -18,6 +18,7 @@
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
 #define K_P 70
+#define K_I (float) 20000
 
 int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
   return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -44,23 +45,22 @@ uint8_t goal_scored() {
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0')
 
-int regulator(int ref) {
+
+int ref_pos = 50;
+double sum_e = 0;
+
+void regulator(int ref) {
     int max_steps_encoder = 1407;
     int encoder_val = encoder_read();
     int8_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
     int e = current_pos - ref;
-
-    
-
-    int u = K_P*e;
-    printf("e u %d %d\n\r", e, u);
+    sum_e += e;
+    int u = K_P*e + 0.0001*K_I*sum_e;
+    printf("e u e_sum %d %d %d\n\r", e, u, (int) sum_e);
     motor_set_mapped_speed(u);
-    return e;
 }
 
 
-int ref_pos = 50;
-int prev_e = 0;
 int main()
 {
     SystemInit();
@@ -91,7 +91,6 @@ int main()
        if(get_reg_tick()) {
             ref_pos = get_node1_msg().slider;
             regulator(ref_pos);
-            prev_e = regulator(ref_pos);
             NVIC_DisableIRQ(TC0_IRQn);
             set_reg_tick();
             NVIC_EnableIRQ(TC0_IRQn);

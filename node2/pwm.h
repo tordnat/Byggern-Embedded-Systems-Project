@@ -1,7 +1,5 @@
+void pwm_channel5_init(void);
 
-//Init PWM. Inits to position 0
-void pwm_init(void);
-
-//Takes in position between -100 and 100
-void pwm_servo_set_pos(int8_t pos, int8_t *prev_set_pos);
+// duty_cycle is restriced to period of pwm signal
+void pwm_set_duty_channel5(uint32_t duty_cycle);
 

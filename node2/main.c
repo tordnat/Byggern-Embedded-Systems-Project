@@ -13,6 +13,8 @@
 #include "timer.h"
 #include "motor.h"
 #include "utils.h"
+#include "servo.h"
+
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
@@ -26,9 +28,7 @@
 
 #define TICK_SIZE_S 0.0001
 
-int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
-  return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
+
 
 uint8_t goal_scored() {
     uint16_t adc_val = adc_read();
@@ -81,7 +81,7 @@ int regulator_speed(int current_pos, int prev_pos, int ref) {
     motor_set_mapped_speed(u);
     return current_pos;
 }
-   
+int goals = 0;  
 void regulator_pos(int ref) {
     int max_steps_encoder = 1407;
     int encoder_val = encoder_read();
@@ -99,15 +99,12 @@ void regulator_pos(int ref) {
     prev_encoder_pos = encoder_val;
 }
 
-int main()
-{
-
-
+int main() {
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
     NVIC_DisableIRQ(TC0_IRQn);
     configure_uart();
-    pwm_init();
+    servo_init();
     adc_init();
     solenoid_init();
     dac_init();
@@ -123,45 +120,37 @@ int main()
     printf("Everything inited\n\r");
 
     motor_calibrate();
+    
     current_pos = encoder_read();
     prev_encoder_pos = encoder_read();
-    int mapped_ref_speed = 0;
     while(current_pos != prev_encoder_pos) {
         current_pos = encoder_read();
         prev_encoder_pos = encoder_read();
         dac_write(0);
     }
-    while (1) {
-    
-       if(get_reg_tick()) {
-        /*
-            current_pos = encoder_read();
-            ref_speed = get_node1_msg().joystickX;
 
-            mapped_ref_speed = ref_speed;
-            prev_encoder_pos = regulator_speed(current_pos, prev_encoder_pos, mapped_ref_speed);
-        */
+    while (1) {
+       if(get_reg_tick()) {
             ref_pos = (get_node1_msg().joystickX+100)/2;
             regulator_pos(ref_pos);
-            
             set_reg_tick();
             int slider_pos = get_node1_msg().slider; //0-100
-            pwm_servo_set_pos(slider_pos, &prev_servo_pos);
-
+            servo_set_pos(slider_pos);
+            printf("%d\n\r", adc_read());
             if(adc_read() < 900) {
-                //printf("Goal active\n\r");
+                goals += 1; //send can message here
+                motor_set_speed(1, 0);
+                while(get_node1_msg().btn); //Goal scored, game must be reset
             }
             if(get_node1_msg().btn) {
                 solenoid_on();
             } else {
                 solenoid_off();
             }
-        
        }
         //printf("e %d sum %d \n\r", e, sum_e);
         //printf("Encoder %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
         //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
-
     }
 }
 

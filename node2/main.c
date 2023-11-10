@@ -12,13 +12,19 @@
 #include "dac.h"
 #include "timer.h"
 #include "motor.h"
-
+#include "utils.h"
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
-#define K_P 70
-#define K_I (float) 2000
+
+#define K_P 6//70
+#define K_I (float) 100000//4000
+
+#define SPEED_K_P 15
+#define SPEED_K_I 0
+
+#define TICK_SIZE_S 0.0001
 
 int map(int val_to_map, int in_min, int in_max, int out_min, int out_max) {
   return (val_to_map - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -33,38 +39,73 @@ uint8_t goal_scored() {
         return 0;
     }
 }
+int prev_servo_pos = 0;
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  ((byte) & 0x80 ? '1' : '0'), \
-  ((byte) & 0x40 ? '1' : '0'), \
-  ((byte) & 0x20 ? '1' : '0'), \
-  ((byte) & 0x10 ? '1' : '0'), \
-  ((byte) & 0x08 ? '1' : '0'), \
-  ((byte) & 0x04 ? '1' : '0'), \
-  ((byte) & 0x02 ? '1' : '0'), \
-  ((byte) & 0x01 ? '1' : '0')
+int ref_pos = 0; //Input from node 1
+int ref_speed = 0; //From pos regulator
+double sum_e_pos = 0; 
+double e_sum = 0;
 
+int prev_encoder_pos = 0; //Prev encoder value
+int current_pos = 0; //Current encoder value
+CAN_MESSAGE can_msg;
 
-int ref_pos = 50;
-double sum_e = 0;
+/*
+* current_pos: in encoder steps (0-4095)
+* prev_pos: in encoder_step (0-4095)
+* ref: in encoder_steps/S (0-4095)
+*
+*/
+int regulator_speed(int current_pos, int prev_pos, int ref) {
+    int32_t speed = (current_pos-prev_pos)/0.1; //Will be very large. Needs 32bit
+    int32_t e = ref - speed;
 
-void regulator(int ref) {
+    int32_t u = e*SPEED_K_P + TICK_SIZE_S*e_sum*SPEED_K_I + 0;
+
+    e_sum += e;
+    //printf("ref e u speed: %d %d %d %d\n\r",ref, e, u, speed);
+    if((u < 700) && (u > 0)) {
+        if(u < 2) {
+            u = 0;
+        } else {
+            u = u+700;
+        }
+    }
+    if((u > -700) && (u < 0)) {
+        if(u > -2) {
+            u = 0;
+        }  else {
+            u = u-700;
+        }
+    }
+    motor_set_mapped_speed(u);
+    return current_pos;
+}
+   
+void regulator_pos(int ref) {
     int max_steps_encoder = 1407;
     int encoder_val = encoder_read();
-    int8_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
-    int e = current_pos - ref;
-    sum_e += e;
-    int u = K_P*e + 0.0001*K_I*sum_e;
-    //printf("e u e_sum %d %d %d\n\r", e, u, (int) sum_e);
-    motor_set_mapped_speed(u);
+    int32_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
+    int e = ref - current_pos;
+    if((e < 0) && (e > -0)) {
+        e = 0;
+    }
+    int u = K_P*e + K_I*sum_e_pos;
+
+    //printf("PosU %d PosE %d\n\r", u, e);
+
+
+    regulator_speed(encoder_val, prev_encoder_pos, u);
+    prev_encoder_pos = encoder_val;
 }
 
-int prev_servo_pos = 0;
 int main()
 {
+
+
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
+    NVIC_DisableIRQ(TC0_IRQn);
     configure_uart();
     pwm_init();
     adc_init();
@@ -80,78 +121,47 @@ int main()
         printf("Can failed init\n\r");
     }
     printf("Everything inited\n\r");
-    //printf("ADC: %d\n\r", adc_read());
-    //printf("Enabled interrupt? %x\n\r", NVIC_GetEnableIRQ(ADC_IRQn));
-    printf("Starting game\n\r");
 
     motor_calibrate();
-    
+    current_pos = encoder_read();
+    prev_encoder_pos = encoder_read();
+    int mapped_ref_speed = 0;
+    while(current_pos != prev_encoder_pos) {
+        current_pos = encoder_read();
+        prev_encoder_pos = encoder_read();
+        dac_write(0);
+    }
     while (1) {
-        //Return 
+    
        if(get_reg_tick()) {
+        /*
+            current_pos = encoder_read();
+            ref_speed = get_node1_msg().joystickX;
+
+            mapped_ref_speed = ref_speed;
+            prev_encoder_pos = regulator_speed(current_pos, prev_encoder_pos, mapped_ref_speed);
+        */
             ref_pos = (get_node1_msg().joystickX+100)/2;
-            regulator(ref_pos);
-            NVIC_DisableIRQ(TC0_IRQn);
+            regulator_pos(ref_pos);
+            
             set_reg_tick();
-            NVIC_EnableIRQ(TC0_IRQn);
-            pwm_servo_set_pos((get_node1_msg().slider-50)*2, prev_servo_pos);
-            prev_servo_pos = (((int)get_node1_msg().slider)-50)*2;
+            int slider_pos = get_node1_msg().slider; //0-100
+            pwm_servo_set_pos(slider_pos, &prev_servo_pos);
+
             if(adc_read() < 900) {
-                printf("Goal active\n\r");
+                //printf("Goal active\n\r");
             }
             if(get_node1_msg().btn) {
                 solenoid_on();
             } else {
                 solenoid_off();
             }
+        
        }
-       
-        //printf("ADC: %d\n\r", adc_read());
-        //if(!goal_scored()) {
-            //node2_msg data;
-            //data.goal = 1;
-            //printf("timer %d\n\r", timer_read());
-            
-            //CAN_MESSAGE msg;
-            //encode_can_msg(&msg, data);
-            //encode_can_msg(&msg, data);
-            //printf("%d",can_send(&msg, CAN_TX_MAILBOX_ID));
-            /*
-            delay_us(1000000);
-            solenoid_on();
-            delay_us(1000000);
-            //Add delay here to register goal
-            solenoid_off();
-            */
-            //motor_set_speed(1, 1500);
-            //delay(100000);
-            //motor_set_speed(0, 1500);
-            /*
-            ref_pos = get_node1_msg().slider;
-            delay_us(100);
-            int16_t pos = encoder_read();
-            //printf("Pos encoder: %d\n\r", pos);
-            int8_t mapped_pos = map(pos, 0, 1407, 0, 100);
-            int e = ref_pos - mapped_pos;
-            if((sum_e < 3000) && (sum_e > -3000)) {
-                sum_e += e/3;
-                if(e < 3) {
-                    sum_e += e;
-                }
-            }
-            
-            motor_set_mapped_speed(e*20+sum_e);
-            //Total range == 1407 steps of encoder
-            */
-            
-            //if(e == 0) {
-            //    motor_set_mapped_speed(0);
-            //}
-            //printf("e %d sum %d \n\r", e, sum_e);
-            //printf("Encoder %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
-            //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
+        //printf("e %d sum %d \n\r", e, sum_e);
+        //printf("Encoder %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
+        //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
 
-        //}
     }
 }
 

@@ -129,7 +129,6 @@ uint8_t can_init(uint32_t can_br, uint8_t num_tx_mb, uint8_t num_rx_mb)
 uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t tx_mb_id)
 {
 	volatile int mail_reg = CAN0->CAN_MB[tx_mb_id].CAN_MSR;
-	printf("can_send: reg in hex: %x\n\r", mail_reg);
 	//Check that mailbox is ready
 	if(mail_reg & CAN_MSR_MRDY)
 	{

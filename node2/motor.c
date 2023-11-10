@@ -51,15 +51,15 @@ void motor_set_mapped_speed(int32_t speed) {
     } else {
         abs_speed = -speed;
     }
-    if((abs_speed > 4095)) {
-        abs_speed = 4090;
+    if((abs_speed > 4000)) {
+        abs_speed = 4000;
     }
 
     if(speed < 0) {
-        motor_set_speed(1, abs_speed);
+        motor_set_speed(0, abs_speed);
     }
     else if(speed > 0) {
-        motor_set_speed(0, abs_speed);
+        motor_set_speed(1, abs_speed);
     } else {
         motor_set_speed(0, 0);
     }
@@ -128,7 +128,7 @@ void encoder_reset() {
 }
 
 void motor_calibrate() {
-    motor_set_speed(0, 2500);
+    motor_set_speed(0, 1500);
     delay_us(2000000);
     motor_set_speed(1, 0);
     encoder_reset();

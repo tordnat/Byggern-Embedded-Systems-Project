@@ -25,7 +25,11 @@ void pwm_init(void) {
     PWM->PWM_ENA |= PWM_ENA_CHID5; //Enable channel 5
 }
 
-//Takes in raw value to set in register
+/**
+ * Takes in raw value to set in register, only limits to PWM period
+ * duty: 
+*/
+
 static void pwm_set_duty(uint32_t duty) {
     if(duty < PWM_PERIOD) {
         PWM->PWM_CH_NUM[5].PWM_CDTYUPD = duty;
@@ -38,19 +42,22 @@ static void pwm_set_duty(uint32_t duty) {
 }
 
 //Takes in position between -100 and 100
-void pwm_servo_set_pos(int8_t pos, int8_t prev_pos) {
-    pos = -pos; // To map joystick direction to intuitive servo direction
+void pwm_servo_set_pos(int8_t pos, int8_t * prev_set_pos) {
+    pos = -pos;
     //Invalid position
     if((pos < -100) || (pos > 100)) {
         printf("Pos outside valid range %d\n\r", pos);
         return; //add error code
     }
     //TODO: add smoothing
-    if(pos == prev_pos) {
+    int diff = pos - *prev_set_pos;
+    diff = abs(diff);
+    if(diff < 3) {
         return;
     }
-    int duty = (((pos - (-100)) * (PWM_SERVO_DUTY_MAX - PWM_SERVO_DUTY_MIN))/(100 - (-100))) + PWM_SERVO_DUTY_MIN;
-
+    *prev_set_pos = pos;
+    //int duty = (((pos - (0)) * (PWM_SERVO_DUTY_MAX - PWM_SERVO_DUTY_MIN))/(100 - (0))) + PWM_SERVO_DUTY_MIN;
+    int duty = map(pos, -100, 0, PWM_SERVO_DUTY_MIN, PWM_SERVO_DUTY_MAX);
     //printf("Pos: %d \n\rDuty Cycle value: %d\n\r", pos, duty);
     if((duty <= PWM_SERVO_DUTY_MAX) && (duty >= PWM_SERVO_DUTY_MIN)) {
         pwm_set_duty(duty);

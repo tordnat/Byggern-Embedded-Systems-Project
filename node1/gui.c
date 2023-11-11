@@ -7,90 +7,59 @@
 #include "oled.h"
 #include "joystick.h"
 
-gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void)) {
-	gui_menu_item *item = (gui_menu_item*) malloc(sizeof(gui_menu_item));
+void gui_menu_item_create(gui_menu_item *item, char *text, void (*click_action)(void)) {
 	if(item) {
 		if(strlen(text) > GUI_STRING_MAX_LENGTH) {
-			return NULL;
+			strcpy(item->text, "String too long");
+		} else {
+			strcpy(item->text, text);
 		}
-		strcpy(item->text, text);
 		item->click_action = click_action;
 		item->parent = NULL;
-		item->children = NULL;
 		item->num_children = 0;
 	}
-	return item;
 }
 int8_t gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
-	child->parent = parent;
-	if (parent == NULL) {
-		return -1; // Invalid
-	}
-	if (parent->num_children == 0) {//Allocate memory for first child
-		parent->children = (gui_menu_item**)malloc(sizeof(gui_menu_item*)); 
-	} else {//Expand allocated memory to fit one more child
-		parent->children = (gui_menu_item**)realloc(parent->children, (parent->num_children + 1) * sizeof(gui_menu_item*));
-	}
-
-	if (parent->children == NULL) {
-		return -1; // Memory allocation error
-	}
-
 	parent->children[parent->num_children] = child;
 	child->parent = parent;
 	parent->num_children++;
-
-	return 0;
-	
-}
-int32_t gui_destroy_all_children(gui_menu_item* parent) {
-	if (parent == NULL || parent->num_children == 0) {
-		return -1; // Nothing to destroy
-	}
-
-	// Recursively destroy each child
-	for (int32_t i = 0; i < parent->num_children; i++) {
-		gui_menu_item* child = parent->children[i];
-		gui_destroy_all_children(child); // Destroy child's children (if any)
-		free(child);
-		parent->children[i] = NULL;
-	}
-
-	// Free the children array
-	free(parent->children);
-	parent->children = NULL;
-	parent->num_children = 0;
 	return 0;
 }
 
-void menu_start_game_func() {
+
+static void menu_start_game_func() {
 	
 }
-void menu_high_score_func() {
-	
-}
-void menu_settings_func() {
+static void menu_settings_func() {
 
 }
-void menu_calibrate_func() {
-
-}
-void menu_debugging_func() {
+static void menu_debug_func() {
 	
 }
 
 gui_menu_item *gui_init() {
-	gui_menu_item *root = gui_menu_item_create("Root", NULL);
-	gui_add_child(root, gui_menu_item_create("Start Game", NULL));
-	gui_add_child(root, gui_menu_item_create("High Score", NULL));
-	gui_add_child(root, gui_menu_item_create("Settings", NULL));
+	static gui_menu_item root;
+	gui_menu_item_create(&root, "root", NULL);
 	
-	//Should be an easier way to index the items in the array. Enum or define?
-	//Settings menu
-	gui_add_child(root->children[2], gui_menu_item_create("Calibrate", NULL));
-	gui_add_child(root->children[2], gui_menu_item_create("Debugging", NULL));
+	static gui_menu_item start_game;
+	gui_menu_item_create(&start_game, "Start Game", menu_start_game_func);
+	gui_add_child(&root, &start_game);
+	
+	static gui_menu_item settings;
+	gui_menu_item_create(&settings, "Settings", menu_settings_func);
+	gui_add_child(&root, &settings);
+	
+	static gui_menu_item debug;
+	gui_menu_item_create(&debug, "Debug", menu_debug_func);
+	gui_add_child(&settings, &debug);
+	
+	static gui_menu_item debug2;
+	gui_menu_item_create(&debug2, "Debug2", menu_debug_func);
+	gui_add_child(&settings, &debug2);
+	
+	gui_draw_menu(&root, 0);
 
-	return root;
+	return &root;
 }
 
 void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
@@ -104,42 +73,49 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 	}
 }
 
-void gui_goto_menu(gui_menu_item **gui_menu_current, int8_t *selected_item, direction_t *joystick_dir_ptr, direction_t *prev_joystick_dir_ptr) {
-	/*
-	direction tmp_joystick_dir = * joystick_dir_ptr;
-	direction tmp_joystick_dir_prev = * prev_joystick_dir_ptr;
-	printf("tmp_joystick_dir %i \r\n", tmp_joystick_dir);
-	printf("tmp_joystick_dir_prev %i\r\n", tmp_joystick_dir_prev);
-	
-	
-	if(tmp_joystick_dir == DOWN && tmp_joystick_dir_prev == NEUTRAL) {
-		(*selected_item) += 1;
-		if((*selected_item) >= (*gui_menu_current)->num_children) (*selected_item) = (*gui_menu_current)->num_children-1; //Fix this, not effective
-		gui_draw_menu((*gui_menu_current), (*selected_item)); //Should not draw entire menu for each selection. Clear and draw page should be enough
+static direction_t prev_joystick_dir = NEUTRAL;
+static int8_t selected_item = 0;
+
+void gui_goto_menu(gui_menu_item **gui_menu_current) {
+	position_t joystick_pos = joystick_get_position();
+	direction_t joystick_dir = joystick_get_direction(joystick_pos);
+	if(prev_joystick_dir != NEUTRAL) {
+		prev_joystick_dir = joystick_dir;
+		return;
 	}
-	if(tmp_joystick_dir == UP && tmp_joystick_dir_prev == NEUTRAL) {
-		(*selected_item) -= 1;
-		if(selected_item <= 0) (*selected_item) = 0;			 //Fix this, not effective
-		gui_draw_menu((*gui_menu_current), (*selected_item));
-	}
-	//Go to selected child
-	if(tmp_joystick_dir == RIGHT && tmp_joystick_dir_prev == NEUTRAL) {
-		if((*gui_menu_current)->num_children != 0) { //To ensure next if does not select from an empty array
-			if((*gui_menu_current)->children[(*selected_item)]->num_children != 0) {
-				(*gui_menu_current) = (*gui_menu_current)->children[(*selected_item)];
-				(*selected_item) = 0;
-				gui_draw_menu((*gui_menu_current), (*selected_item));
+	prev_joystick_dir = joystick_dir;
+	switch(joystick_dir) {
+		case DOWN: //Navigate down
+			printf("down %s\n\r",(*gui_menu_current)->text);
+			selected_item += 1;
+			if(selected_item >= (*gui_menu_current)->num_children) {
+				selected_item = (*gui_menu_current)->num_children-1;
 			}
-		}
+			gui_draw_menu((*gui_menu_current), selected_item);
+		break;
+		case UP: //Navigate up
+			printf("up %s\n\r",(*gui_menu_current)->text);
+			selected_item -= 1;
+			if(selected_item <= 0) selected_item = 0;
+			gui_draw_menu((*gui_menu_current), selected_item);
+		break;
+		case RIGHT: //Go to selected child
+			printf("right %s\n\r",(*gui_menu_current)->text);
+			if((*gui_menu_current)->num_children != 0) { //To ensure next if does not select from an empty array
+				if((*gui_menu_current)->children[selected_item]->num_children != 0) {
+					(*gui_menu_current) = (*gui_menu_current)->children[selected_item];
+					selected_item = 0;
+					gui_draw_menu((*gui_menu_current), selected_item);
+				}
+			}
+		break;
+		case LEFT: //Go to parent
+			printf("left %s\n\r",(*gui_menu_current)->text);
+			if((*gui_menu_current)->parent != NULL){ //Check for no parent
+				(*gui_menu_current) = (*gui_menu_current)->parent;
+				selected_item = 0;
+				gui_draw_menu((*gui_menu_current), selected_item);
+			}
+		break;
 	}
-	//Go to parent
-	if(tmp_joystick_dir == LEFT && tmp_joystick_dir_prev == NEUTRAL) {
-		if((*gui_menu_current)->parent != NULL){ //Check for no parent
-			(*gui_menu_current) = (*gui_menu_current)->parent;
-			gui_draw_menu((*gui_menu_current), (*selected_item));
-			(*selected_item) = 0;
-		}
-	}
-	(*prev_joystick_dir_ptr) = tmp_joystick_dir;
-	*/
 }

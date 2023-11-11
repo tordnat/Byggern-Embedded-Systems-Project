@@ -58,7 +58,6 @@ uint8_t can_init(uint32_t can_br, uint8_t num_tx_mb, uint8_t num_rx_mb)
 	//Clear status register on read
 	ul_status = CAN0->CAN_SR; 
 	
-	
 	// Disable interrupts on CANH and CANL pins
 	PIOA->PIO_IDR = PIO_PA8A_URXD | PIO_PA9A_UTXD;
 	
@@ -206,13 +205,13 @@ uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t rx_mb_id)
 	}
 }
 
-void encode_can_msg2(CAN_MESSAGE* msg, node2_msg data) {
+void encode_can_node2_msg(CAN_MESSAGE* msg, node2_msg data) {
     msg->data[0] = data.goal;
     msg->data_length = sizeof(msg->data);
     msg->id = GOAL_CAN_ID;
 }
 
-void decode_can_msg1(CAN_MESSAGE* msg, node1_msg *data) {
+void decode_can_node1_msg(CAN_MESSAGE* msg, node1_msg *data) {
     data->joystickX = msg->data[0];
 	data->joystickY = msg->data[1];
 	data->btn = msg->data[2];

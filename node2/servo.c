@@ -15,27 +15,25 @@ void servo_init() {
 }
 
 void servo_set_pos(int8_t pos) {
-    pos = -pos;
     //Invalid position
-    if((pos < -100) || (pos > 100)) {
+    if(pos > 100) {
         printf("Pos outside valid range %d\n\r", pos);
-        return; //add error code
+        return;
     }
-    //TODO: add smoothing
+    //To prevent twitching from inaccurate slider values
     int32_t diff = pos - prev_pos;
     diff = abs(diff);
     if(diff < 3) {
         return;
     }
     prev_pos = pos;
-    //int32_t duty = (((pos - (0)) * (PWM_SERVO_DUTY_MAX - PWM_SERVO_DUTY_MIN))/(100 - (0))) + PWM_SERVO_DUTY_MIN;
-    int32_t duty = map(pos, -100, 0, PWM_SERVO_DUTY_MIN, PWM_SERVO_DUTY_MAX);
-    //printf("Pos: %d \n\rDuty Cycle value: %d\n\r", pos, duty);
+    int32_t duty = map(pos, 100, 0, PWM_SERVO_DUTY_MIN, PWM_SERVO_DUTY_MAX);
+
+    //Check if servo is outside 1ms and 2ms pulse width
     if((duty <= PWM_SERVO_DUTY_MAX) && (duty >= PWM_SERVO_DUTY_MIN)) {
         pwm_set_duty_channel5(duty);
-        return; //add error code
     }
     else {
-        printf("Calc error\n\r");
+        printf("Calc error in servo_set_pos\n\r");
     }
 }

@@ -79,10 +79,15 @@ void CAN0_Handler( void )
 			}
 		}
 		*/
+		//Node 1
 		if(message.id == 0x66) {
 			//printf("Recieved from 0x66\n\r");
-			decode_can_msg1(&message , &node1_buffer);
+			decode_can_node1_msg(&message , &node1_buffer);
 			//printf("Data %d %d %d %d %d \n\r", message.data_length, message.data[0], message.data[1], message.data[2], message.data[3]);
+		}
+		//Node 3
+		if(1) {
+			//printf("recieved from node3\n\r");
 		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");

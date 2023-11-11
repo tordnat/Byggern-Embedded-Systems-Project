@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "servo.h"
 #include "regulator.h"
+#include "encoder.h"
 
 #define LED1 23
 #define LED2 19
@@ -54,18 +55,12 @@ int main() {
     if(can_init_def_tx_rx_mb(can_br)) {
         printf("Can failed init\n\r");
     }
-    printf("Everything inited\n\r");
-    motor_calibrate();
-    
-    /*
-    current_encoder_pos = encoder_read();
-    prev_encoder_pos = encoder_read();
-    while(current_encoder_pos != prev_encoder_pos) {
-        current_encoder_pos = encoder_read();
-        prev_encoder_pos = encoder_read();
-        dac_write(0);
-    }
-    */
+
+    printf("Everything inited\n\rCalibrating...\n\r");
+    encoder_calibrate();
+    printf("%d\n\r", encoder_get_total_encoder_steps());
+    printf("Finished calibration\n\r\n\r");
+
     while (1) {
        if(get_reg_tick()) {
             ref_pos = (get_node1_msg().joystickX+100)/2;
@@ -78,7 +73,6 @@ int main() {
             if(adc_read() < 900) {
                 goals += 1; //send can message here
                 motor_set_speed(1, 0);
-                printf("%d\n\r", adc_read());
                 while(get_node1_msg().btn); //Goal scored, game must be reset
             }
             if(get_node1_msg().btn) {

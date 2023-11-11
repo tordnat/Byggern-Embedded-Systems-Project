@@ -6,16 +6,16 @@
 
 //Position regulator
 #define K_P 6//70
-#define K_I 10000//4000
+#define K_I 0.15//4000
 
 //Speed regulator
 #define SPEED_K_P 15
 #define SPEED_K_I 0
 
-#define TICK_SIZE_S 0.1
+#define TICK_SIZE_S 0.05
 
-static int32_t sum_e_pos = 0; 
-static int32_t e_sum = 0;
+static int32_t e_sum_pos = 0; 
+static int32_t e_sum_speed = 0;
 static void regulator_speed(int32_t current_pos, int32_t prev_pos, int32_t ref);
 
 void regulator_pos(int32_t ref, int32_t *prev_encoder_pos) {
@@ -26,17 +26,30 @@ void regulator_pos(int32_t ref, int32_t *prev_encoder_pos) {
     if((e < 0) && (e > -0)) {
         e = 0;
     }
-    int32_t u = K_P*e + K_I*sum_e_pos;
+    int32_t reg_I = K_I*e_sum_pos*TICK_SIZE_S;
+    //Anti windup
+    if(reg_I > 2000) { //2000 is somewhat arbitrary. Not at 4000 (max) because then P will not be able to counteract it 
+        reg_I = 2000;
+    }
+    if(reg_I < -2000) {
+        reg_I = -2000;
+    }
+    //Prevent reg_I from doing anything if error is big
+    if(abs(e) > 20) {
+        reg_I = 0;
+    }
+    int32_t u = K_P*e + reg_I;
+    //printf("u %d, ref %d, I-ledd %d\n\r", u, ref, reg_I);
     regulator_speed(encoder_val, *prev_encoder_pos, u);
     *prev_encoder_pos = encoder_val;
+    e_sum_pos += e;
 }
 
 static void regulator_speed(int32_t current_pos, int32_t prev_pos, int32_t ref) {
     int32_t speed = (current_pos-prev_pos)/TICK_SIZE_S; //Will be very large. Needs 32bit
     int32_t e = ref - speed;
-    int32_t u = e*SPEED_K_P + TICK_SIZE_S*e_sum*SPEED_K_I + ref;
-    e_sum += e;
-    printf("u %d, ref %d, I-ledd\n\r", u, ref, TICK_SIZE_S*e_sum*SPEED_K_I);
+    int32_t u = e*SPEED_K_P + TICK_SIZE_S*e_sum_speed*SPEED_K_I + ref;
+    e_sum_speed += e;
     //To account for non-linear response when applying voltage (e.g voltage not relating to speed linearly)
     const uint16_t voltage_threshold = 700; 
     const uint8_t jitter_threshold = 2; //To prevent jumping between +- voltage thershold

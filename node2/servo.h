@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-void servo_init();
+void servo_init(void);
 
 /**
  * Sets position of servo.

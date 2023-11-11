@@ -6,8 +6,8 @@
 #include "sam/sam3x/include/sam.h"
 #include "timer.h"
 
-//not finished
-int32_t reg_tick;
+int32_t reg_tick = 0;
+
 void set_reg_tick() {
     reg_tick = 0;
 }
@@ -36,7 +36,7 @@ void timer_init() {
 
 void delay_us(uint32_t us)
 {
-    //Wrong calc
+    //Not correct implementation of timer, but works for places where accuracy is not needed
 	for (volatile uint32_t i = 0; i < ((84 / 10) * us); i++) {}
 }
 void TC0_Handler(void) {

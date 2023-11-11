@@ -63,22 +63,6 @@ void CAN0_Handler( void )
 			int8_t test = message.data[i];
 			if(DEBUG_INTERRUPT)printf("%d ", test);
 		}
-
-		//Very temp
-		/*
-		if(message.id == 0x66) {
-			int8_t pos = message.data[0];
-			pwm_servo_set_pos(pos, prev_pos_g);
-			prev_pos_g = pos;
-			//x, y, btn, slider.
-			uint8_t btn = message.data[2];
-			if(btn) {
-				solenoid_on();
-			} else {
-				solenoid_off();
-			}
-		}
-		*/
 		//Node 1
 		if(message.id == 0x66) {
 			//printf("Recieved from 0x66\n\r");
@@ -87,7 +71,7 @@ void CAN0_Handler( void )
 		}
 		//Node 3
 		if(1) {
-			//printf("recieved from node3\n\r");
+			printf("recieved from node3\n\r");
 		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");

@@ -3,7 +3,7 @@
 
 #include "sam/sam3x/include/sam.h"
 
-void solenoid_init() {
+void solenoid_init(void) {
     PIOA->PIO_WPMR &= ~PIO_WPMR_WPEN; //Write protect disable
     PMC->PMC_PCER0 |= PMC_PCER0_PID11; //Enable clock for PIOA
 
@@ -11,9 +11,9 @@ void solenoid_init() {
     PIOA->PIO_OER |= PIO_OER_P11; //enable output
 }
 
-void solenoid_on() {
+void solenoid_on(void) {
     PIOA->PIO_SODR = PIO_SODR_P11; //Set output data
 }
-void solenoid_off() {
+void solenoid_off(void) {
     PIOA->PIO_CODR = PIO_SODR_P11; //Clear output data
 }

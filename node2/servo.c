@@ -10,7 +10,7 @@
 
 static int8_t prev_pos = 0;
 
-void servo_init() {
+void servo_init(void) {
     pwm_channel5_init();
 }
 

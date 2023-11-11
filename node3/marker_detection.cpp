@@ -20,3 +20,15 @@ cv::Mat detect_markers(cv::Mat image){
 
   return copy;
 }
+
+bool loadCameraCalibration(std::string filename, cv::Mat &cameraMatrix, cv::Mat &distCoeffs) {
+    cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+    if (!fs.isOpened()) {
+        std::cerr << "Failed to open " << filename << std::endl;
+        return false;
+    }
+    fs["camera_matrix"] >> cameraMatrix;
+    fs["distortion_coefficients"] >> distCoeffs;
+    fs.release();
+    return true;
+}

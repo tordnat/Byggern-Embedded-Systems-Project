@@ -4,5 +4,7 @@ Debug/
 Debug/*
 node2/build/*
 node2/sam/*
+Build/*
+build
 build/*
 .vscode/*

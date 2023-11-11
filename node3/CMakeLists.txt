@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION "3.17")
 project(ball_tracking)
 
 
-set(OpenCV_DIR /Users/tordnatlandsmyr/code/c++/opencv/install/lib/cmake/opencv4)
 
 # Tell compiler to use C++ 14 features which is needed because
 # Clang version is often behind in the XCode installation
@@ -20,7 +19,7 @@ find_package(Boost 1.65 REQUIRED COMPONENTS system)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # specify the executable target to be built
-add_executable(ball_tracking ball_tracking.cpp marker_detection.cpp serial_transmit.cpp)
+add_executable(ball_tracking ball_tracking.cpp marker_calibration.cpp serial_transmit.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(ball_tracking ${OpenCV_LIBS} )

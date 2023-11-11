@@ -14,16 +14,15 @@ static int joystick_x_center_calibration = 127;
 static int joystick_y_center_calibration = 127;
 
 
-uint8_t slider_get_right(void){
-	return byte_to_percentage(adc_read(ADC_SLIDER_R_CHAN));
-}
-uint8_t slider_get_left(void){
-	return byte_to_percentage(adc_read(ADC_SLIDER_L_CHAN));
+joystick_t get_joystick(void){
+	joystick_t joystick;
+	joystick.axis = joystick_get_position();
+	joystick.button = joystick_get_button();
+	return joystick;
 }
 
-
-position joystick_get_position(void){
-	position pos;
+position_t joystick_get_position(void){
+	position_t pos;
 	int x_meas = (int) adc_read(ADC_JOYSTICK_X_CHAN);
 	int y_meas = (int) adc_read(ADC_JOYSTICK_Y_CHAN);
 	pos.x = (int) ((x_meas - joystick_x_center_calibration)/(float)joystick_x_center_calibration*100.0);
@@ -31,6 +30,14 @@ position joystick_get_position(void){
 	if (pos.x > 100) pos.x = 100;
 	if (pos.y > 100) pos.y = 100;
 	return pos;
+}
+
+uint8_t joystick_get_button(void){
+	return byte_to_percentage(adc_read(ADC_JOYSTICK_BUTTON_CHAN));
+}
+
+uint8_t slider_get_right(void){
+	return byte_to_percentage(adc_read(ADC_SLIDER_R_CHAN));
 }
 
 void joystick_full_calibration(uint8_t samples){
@@ -53,7 +60,7 @@ uint8_t joystick_calibrate_y(uint8_t samples){
 	joystick_y_center_calibration = array_avg(sample_array, samples);
 	return joystick_y_center_calibration;
 }
-direction joystick_get_direction (position pos) {
+direction_t joystick_get_direction (position_t pos) {
 	const int8_t threshold = 90;
 	if(pos.x >= threshold && abs(pos.y) <= threshold) {
 		return RIGHT;

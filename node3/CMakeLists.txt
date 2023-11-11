@@ -12,7 +12,7 @@ set(OpenCV_DIR /Users/tordnatlandsmyr/code/c++/opencv/install/lib/cmake/opencv4)
 
 # Tell compiler to use C++ 14 features which is needed because
 # Clang version is often behind in the XCode installation
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package( OpenCV REQUIRED )
 find_package(Boost 1.65 REQUIRED COMPONENTS system)

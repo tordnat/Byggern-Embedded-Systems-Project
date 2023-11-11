@@ -14,14 +14,14 @@ void can_interrupt_init(void){
 }
 
 ISR(INT0_vect){
-	can_interrupt_handle();
+	can_rx_interrupt_handle();
 }
 
-void can_interrupt_handle(void){
+void can_rx_interrupt_handle(void){
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		mcp2515_read_rx0_to_buffer(get_can_buffer_ptr());
+		mcp2515_read_rx0_to_buffer(get_can_receive_buffer_ptr());
 		mcp2515_interrupt_flags = mcp2515_read(MCP_CANINTF);
 		mcp2515_write(MCP_CANINTF, 0x0); //Clear interrupt
-		can_is_interrupt = 1;
+		can_new_message_received = 1;
 	}	
 }

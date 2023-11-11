@@ -41,10 +41,10 @@ uint8_t slider_get_right(void){
 }
 
 void joystick_full_calibration(uint8_t samples){
-	printf("Calibrating Joystick center\n\r");
+	//printf("Calibrating Joystick center\n\r");
 	joystick_calibrate_x(samples);
 	joystick_calibrate_y(samples);
-	printf("X Center: %i\n\rY Center: %i\n\r", joystick_x_center_calibration, joystick_y_center_calibration);
+	//printf("X Center: %i\n\rY Center: %i\n\r", joystick_x_center_calibration, joystick_y_center_calibration);
 }
 
 uint8_t joystick_calibrate_x(uint8_t samples){

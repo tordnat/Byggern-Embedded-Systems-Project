@@ -15,7 +15,6 @@
 
 
 
-//1 left, 0 right 
 
 void motor_init() {
     PIOD->PIO_WPMR &= ~PIO_WPMR_WPEN; //Write protect disable
@@ -29,7 +28,7 @@ void motor_init() {
     //PIOD->PIO_OER |= MOTOR_EN_PIN; //enable output
     //PIOD->PIO_SODR = MOTOR_EN_PIN; //Enable motor (disable break)
 }
-
+//1 left, 0 right 
 void motor_set_speed(uint8_t direction, uint16_t speed) {
     if(direction == 0) {
         PIOD->PIO_SODR = MOTOR_DIR_PIN;
@@ -38,14 +37,13 @@ void motor_set_speed(uint8_t direction, uint16_t speed) {
         PIOD->PIO_CODR = MOTOR_DIR_PIN;
     }
     else {
-        //Add error print/code here
-        printf("err");
+        printf("Invalid direction in motor_set_speed\n\r");
         return;
     }
     dac_write(speed);
 }
 void motor_set_mapped_speed(int32_t speed) {
-    int abs_speed;
+    int32_t abs_speed;
     if(speed > 0) {
         abs_speed = speed;
     } else {

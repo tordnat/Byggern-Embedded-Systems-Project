@@ -21,10 +21,6 @@
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
 
-
-
-
-
 uint8_t goal_scored() {
     uint16_t adc_val = adc_read();
     const uint16_t threshold = 1000;
@@ -46,24 +42,22 @@ int current_encoder_pos = 0; //Current encoder value
 int main() {
     SystemInit();
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
-    NVIC_DisableIRQ(TC0_IRQn);
     configure_uart();
     servo_init();
-    adc_init();
+    dac_channel1_init();
+    adc_channel0_init();
     solenoid_init();
-    dac_init();
     motor_init();
     encoder_init();
     timer_init();
-    //adc_init_interrupt();
     uint32_t can_br = ((42-1) << CAN_BR_BRP_Pos) | ((4-1) << CAN_BR_SJW_Pos) | ((7-1) << CAN_BR_PROPAG_Pos) | ((4-1) << CAN_BR_PHASE1_Pos) | ((4-1) << CAN_BR_PHASE2_Pos);
-    //Tx = 0, RX = 1 or 2
     if(can_init_def_tx_rx_mb(can_br)) {
         printf("Can failed init\n\r");
     }
     printf("Everything inited\n\r");
     motor_calibrate();
     
+    /*
     current_encoder_pos = encoder_read();
     prev_encoder_pos = encoder_read();
     while(current_encoder_pos != prev_encoder_pos) {
@@ -71,7 +65,7 @@ int main() {
         prev_encoder_pos = encoder_read();
         dac_write(0);
     }
-
+    */
     while (1) {
        if(get_reg_tick()) {
             ref_pos = (get_node1_msg().joystickX+100)/2;
@@ -84,6 +78,7 @@ int main() {
             if(adc_read() < 900) {
                 goals += 1; //send can message here
                 motor_set_speed(1, 0);
+                printf("%d\n\r", adc_read());
                 while(get_node1_msg().btn); //Goal scored, game must be reset
             }
             if(get_node1_msg().btn) {
@@ -93,7 +88,6 @@ int main() {
             }
        }
         //printf("e %d sum %d \n\r", e, sum_e);
-        //printf("Encoder %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c\n\r", BYTE_TO_BINARY(encoder_read()>>8), BYTE_TO_BINARY(encoder_read()));
         //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
     }
 }

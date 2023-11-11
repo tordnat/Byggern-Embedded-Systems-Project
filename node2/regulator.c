@@ -3,19 +3,21 @@
 #include "motor.h"
 #include "utils.h"
 
+//Position regulator
 #define K_P 6//70
 #define K_I (float) 100000//4000
 
+//Speed regulator
 #define SPEED_K_P 15
 #define SPEED_K_I 0
 
 #define TICK_SIZE_S 0.0001
 
-static double sum_e_pos = 0; 
-static double e_sum = 0;
+static int32_t sum_e_pos = 0; 
+static int32_t e_sum = 0;
 
 void regulator_pos(int ref, int *prev_encoder_pos) {
-    int max_steps_encoder = 1407;
+    int max_steps_encoder = 1407; //get_encoder_calibration();
     int encoder_val = encoder_read();
     int32_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
     int e = ref - current_pos;
@@ -23,10 +25,7 @@ void regulator_pos(int ref, int *prev_encoder_pos) {
         e = 0;
     }
     int u = K_P*e + K_I*sum_e_pos;
-
     //printf("PosU %d PosE %d Ref %d Prev_pos %d\n\r", u, e, ref, *prev_encoder_pos);
-
-
     regulator_speed(encoder_val, *prev_encoder_pos, u);
     *prev_encoder_pos = encoder_val;
 }

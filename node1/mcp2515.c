@@ -28,7 +28,7 @@ uint8_t mcp2515_init(){
 		return 1;
 	}
 	
-	// Speed 500kb/s
+	// Speed 500kb/s, see datasheet for bitrate calculation
 	mcp2515_write(MCP_CNF3, MCP_PHSEG2);
 	mcp2515_write(MCP_CNF2, (MCP_PRSEG) | (MCP_PHSEG1 << 3) | (1 << 7));
 	mcp2515_write(MCP_CNF1, (MCP_SJW << 6) | MCP_BRP );
@@ -84,7 +84,6 @@ static uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	
 	return 0;
 }
-
 
 static void mcp2515_request_to_send(uint8_t selected_rts_buffer){ // Instruct controller to begin message transmission for selected buffer i.e. MCP_RTS_TX0
 	mcp2515_enable();

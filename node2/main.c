@@ -14,19 +14,14 @@
 #include "motor.h"
 #include "utils.h"
 #include "servo.h"
+#include "regulator.h"
 
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
 #define CAN_TX_MAILBOX_ID 0
 
-#define K_P 6//70
-#define K_I (float) 100000//4000
 
-#define SPEED_K_P 15
-#define SPEED_K_I 0
-
-#define TICK_SIZE_S 0.0001
 
 
 
@@ -39,65 +34,14 @@ uint8_t goal_scored() {
         return 0;
     }
 }
-int prev_servo_pos = 0;
 
-int ref_pos = 0; //Input from node 1
-int ref_speed = 0; //From pos regulator
-double sum_e_pos = 0; 
-double e_sum = 0;
-
-int prev_encoder_pos = 0; //Prev encoder value
-int current_pos = 0; //Current encoder value
 CAN_MESSAGE can_msg;
 
-/*
-* current_pos: in encoder steps (0-4095)
-* prev_pos: in encoder_step (0-4095)
-* ref: in encoder_steps/S (0-4095)
-*
-*/
-int regulator_speed(int current_pos, int prev_pos, int ref) {
-    int32_t speed = (current_pos-prev_pos)/0.1; //Will be very large. Needs 32bit
-    int32_t e = ref - speed;
 
-    int32_t u = e*SPEED_K_P + TICK_SIZE_S*e_sum*SPEED_K_I + 0;
-
-    e_sum += e;
-    //printf("ref e u speed: %d %d %d %d\n\r",ref, e, u, speed);
-    if((u < 700) && (u > 0)) {
-        if(u < 2) {
-            u = 0;
-        } else {
-            u = u+700;
-        }
-    }
-    if((u > -700) && (u < 0)) {
-        if(u > -2) {
-            u = 0;
-        }  else {
-            u = u-700;
-        }
-    }
-    motor_set_mapped_speed(u);
-    return current_pos;
-}
 int goals = 0;  
-void regulator_pos(int ref) {
-    int max_steps_encoder = 1407;
-    int encoder_val = encoder_read();
-    int32_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
-    int e = ref - current_pos;
-    if((e < 0) && (e > -0)) {
-        e = 0;
-    }
-    int u = K_P*e + K_I*sum_e_pos;
-
-    //printf("PosU %d PosE %d\n\r", u, e);
-
-
-    regulator_speed(encoder_val, prev_encoder_pos, u);
-    prev_encoder_pos = encoder_val;
-}
+int ref_pos = 0; //Input from node 1
+int prev_encoder_pos = 0; //Prev encoder value
+int current_encoder_pos = 0; //Current encoder value
 
 int main() {
     SystemInit();
@@ -118,13 +62,12 @@ int main() {
         printf("Can failed init\n\r");
     }
     printf("Everything inited\n\r");
-
     motor_calibrate();
     
-    current_pos = encoder_read();
+    current_encoder_pos = encoder_read();
     prev_encoder_pos = encoder_read();
-    while(current_pos != prev_encoder_pos) {
-        current_pos = encoder_read();
+    while(current_encoder_pos != prev_encoder_pos) {
+        current_encoder_pos = encoder_read();
         prev_encoder_pos = encoder_read();
         dac_write(0);
     }
@@ -132,11 +75,12 @@ int main() {
     while (1) {
        if(get_reg_tick()) {
             ref_pos = (get_node1_msg().joystickX+100)/2;
-            regulator_pos(ref_pos);
+
+            regulator_pos(ref_pos, &prev_encoder_pos);
+
             set_reg_tick();
             int slider_pos = get_node1_msg().slider; //0-100
             servo_set_pos(slider_pos);
-            printf("%d\n\r", adc_read());
             if(adc_read() < 900) {
                 goals += 1; //send can message here
                 motor_set_speed(1, 0);

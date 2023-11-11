@@ -5,4 +5,5 @@ void encoder_init();
 int16_t encoder_read();
 void encoder_reset();
 void motor_calibrate();
+void motor_set_mapped_speed(int32_t speed);
 

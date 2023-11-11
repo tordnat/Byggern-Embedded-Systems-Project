@@ -1,0 +1,3 @@
+/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build/CMakeFiles/simple-demo.dir
+/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build/CMakeFiles/edit_cache.dir
+/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build/CMakeFiles/rebuild_cache.dir

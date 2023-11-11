@@ -175,6 +175,8 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_PRSEG		(7-1)
 #define MCP_PHSEG1		(4-1)
 #define MCP_PHSEG2		(4-1)
+
+#define MCP_CS  PINB1
 // Globals
 
 uint8_t mcp2515_init(void);

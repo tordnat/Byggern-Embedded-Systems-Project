@@ -5,10 +5,14 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "marker_detection.h"
+#include "serial_transmit.h"
 
 using namespace cv;
+
 int main()
 {
+    serial_init("/dev/tty.usbserial-1410");
+
     cv::VideoCapture cap(0);
 
     if (!cap.isOpened()){
@@ -41,9 +45,9 @@ int main()
           //cv::circle(imageWithContours, center, radius, cv::Scalar(0, 0, 255) );
       }
             
-
-      cv::Mat markers = detect_markers(imageWithContours);
-      cv::imshow("Frame", markers);
+    
+      detect_markers(imageWithContours);
+      cv::imshow("Frame", gray);
       
       if(cv::waitKey(1) >= 0) break;
     }

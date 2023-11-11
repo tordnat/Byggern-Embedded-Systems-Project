@@ -5,26 +5,23 @@
 cmake_minimum_required(VERSION "3.17")
 
 # name of this example project
-project(simple-demo)
+project(ball_tracking)
 
-# set OpenCV_DIR variable equal to the path to the cmake
-# files within the previously installed opencv program
+
 set(OpenCV_DIR /Users/tordnatlandsmyr/code/c++/opencv/install/lib/cmake/opencv4)
 
 # Tell compiler to use C++ 14 features which is needed because
 # Clang version is often behind in the XCode installation
 set(CMAKE_CXX_STANDARD 14)
 
-# configure the necessary common CMake environment variables
-# needed to include and link the OpenCV program into this
-# demo project, namely OpenCV_INCLUDE_DIRS and OpenCV_LIBS
 find_package( OpenCV REQUIRED )
-
+find_package(Boost 1.65 REQUIRED COMPONENTS system)
 # tell the build to include the headers from OpenCV
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # specify the executable target to be built
-add_executable(simple-demo ball_tracking.cpp marker_detection.cpp)
+add_executable(ball_tracking ball_tracking.cpp marker_detection.cpp serial_transmit.cpp)
 
 # tell it to link the executable target against OpenCV
-target_link_libraries(simple-demo ${OpenCV_LIBS} )
+target_link_libraries(ball_tracking ${OpenCV_LIBS} )
+target_link_libraries(ball_tracking Boost::system)

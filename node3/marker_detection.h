@@ -1,4 +1,16 @@
 #pragma once
+#include <opencv2/core.hpp>
+#include <opencv2/aruco.hpp>
 
-cv::Mat detect_markers(cv::Mat image);
-bool loadCameraCalibration(std::string filename, cv::Mat &cameraMatrix, cv::Mat &distCoeffs);
+#define MARKER_ID_TOP_LEFT      40
+#define MARKER_ID_TOP_RIGHT     124
+#define MARKER_ID_BOTTOM_LEFT   23
+#define MARKER_ID_BOTTOM_RIGHT  62
+#define MARKER_ID_ACTUATOR      203
+
+typedef struct{
+    float id;
+    std::vector<cv::Point2f> corner;
+} marker_t;
+
+std::vector<marker_t> detect_markers(cv::Mat image);

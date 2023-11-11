@@ -151,9 +151,9 @@ static void mcp2515_reset(void){
 }
 
 static void mcp2515_enable(void){
-	PORTB &= ~(1 << PB4); //PB4 is chip select for SPI slave
+	PORTB &= ~(1 << MCP_CS); //MCP_CS is chip select for SPI slave
 }
 
 static void mcp2515_disable(void){
-	PORTB |= (1 << PB4); // mulig � legge inn en sjekk her for at verdien blir endret
+	PORTB |= (1 << MCP_CS); // mulig � legge inn en sjekk her for at verdien blir endret
 }

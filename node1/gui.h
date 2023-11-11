@@ -17,11 +17,11 @@ gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void));
 
 //Returns 0 on success. 
 //Returns -1 if the input is invalid or if we are unable to allocate enough memory
-int gui_add_child(gui_menu_item *parent, gui_menu_item *child);
+int8_t gui_add_child(gui_menu_item *parent, gui_menu_item *child);
 
 //Returns 0 on success
 //Returns -1 if there is nothing to destroy
-int gui_destroy_all_children(gui_menu_item* parent);
+int8_t gui_destroy_all_children(gui_menu_item* parent);
 
 //Initializes gui with a root node. Returns the root node
 gui_menu_item *gui_init();

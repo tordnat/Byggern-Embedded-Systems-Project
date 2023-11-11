@@ -88,7 +88,7 @@ Initialize UART communication
  *
  * \retval Success(0) or failure(1)
  */
-int uart_getchar(uint8_t *c)
+int32_t uart_getchar(uint8_t *c)
 {
 	// Check if a character is available in the ringbuffer
 	if(rx_buffer.head == rx_buffer.tail) { //Buffer is empty
@@ -108,7 +108,7 @@ int uart_getchar(uint8_t *c)
  *
  * \retval Success(0) or failure(1).
  */
-int uart_putchar(const uint8_t c)
+int32_t uart_putchar(const uint8_t c)
 {
 	// Check if the transmitter is ready
 	if((UART->UART_SR & UART_SR_TXRDY) != UART_SR_TXRDY)

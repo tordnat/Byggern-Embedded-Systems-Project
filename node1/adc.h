@@ -12,7 +12,7 @@ void adc_init(void);
 /* Read sample Byte from 8-bit 4-channel ADC
 * - Channel 0 - 3
 */
-uint8_t adc_read(int channel);
+uint8_t adc_read(uint8_t channel);
 
 /* Read multiple samples to an array from channel X
 * - sample_array is modifies

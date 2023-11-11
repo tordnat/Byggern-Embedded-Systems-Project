@@ -63,7 +63,7 @@ uint8_t mcp2515_read_rx0_to_buffer(can_message_t* message_buffer){
 	message_buffer->id = (mcp2515_read(MCP_RXB0SIDL) >> SIDL_ROFFSET); // = to clear previous values 
 	message_buffer->id |= (mcp2515_read(MCP_RXB0SIDH) << SIDH_LOFFSET);
 	message_buffer->data_length = mcp2515_read(MCP_RXB0DLC);
-	for (int i = 0; i < message_buffer->data_length; ++i){
+	for (uint8_t i = 0; i < message_buffer->data_length; ++i){
 		message_buffer->data[i] = mcp2515_read(MCP_RXB0D0 + i);
 	}
 	return 0;
@@ -77,7 +77,7 @@ static uint8_t mcp2515_load_tx0_buffer(can_message_t* message){
 	mcp2515_write(MCP_TXB0SIDH, (message->id >> SIDH_LOFFSET)); // Bits [3:10]
 	mcp2515_write(MCP_TXB0SIDL, (SIDL_MASK & (message->id << SIDL_ROFFSET))); //Bits [0:2]
 	mcp2515_write(MCP_TXB0DLC, message->data_length);
-	for (int i = 0; i < message->data_length; ++i){
+	for (uint8_t i = 0; i < message->data_length; ++i){
 		mcp2515_write(MCP_TXB0D0+i, message->data[i]);
 	}
 	
@@ -163,5 +163,5 @@ static void mcp2515_enable(void){
 }
 
 static void mcp2515_disable(void){
-	PORTB |= (1 << PB4); // mulig å legge inn en sjekk her for at verdien blir endret
+	PORTB |= (1 << PB4); // mulig ï¿½ legge inn en sjekk her for at verdien blir endret
 }

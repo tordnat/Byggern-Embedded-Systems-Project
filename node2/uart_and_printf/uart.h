@@ -1,7 +1,7 @@
 /*
  * uart.h
  *
- * Author: Gustav O. Often and Eivind H. Jølsgard
+ * Author: Gustav O. Often and Eivind H. Jï¿½lsgard
  *
  * For use in TTK4155 Embedded and Industrial Computer Systems Design
  * NTNU - Norwegian University of Science and Technology
@@ -27,8 +27,8 @@ typedef struct uart_ringbuffer_t
 
 void configure_uart(void);
 
-int uart_getchar(uint8_t *c);
-int uart_putchar(const uint8_t c);
+int32_t uart_getchar(uint8_t *c);
+int32_t uart_putchar(const uint8_t c);
 
 void UART_Handler       ( void );
 

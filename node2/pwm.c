@@ -4,7 +4,7 @@
 #define PWM_PERIOD 1641
 #define PWM_SERVO_DUTY_MID 123
 
-static const int channel = 5;
+static const int32_t channel = 5;
 
 void pwm_channel5_init(void) {
     PWM->PWM_WPCR &= ~PIO_WPMR_WPEN; // Disable write protection for PWM

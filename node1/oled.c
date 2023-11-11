@@ -53,13 +53,13 @@ void oled_goto_page(uint8_t page) {
 }
 void oled_clear_page(uint8_t page) {
 	oled_pos(page, 0);
-	for(int j = 0; j < NUM_COLS; j++) {
+	for(uint8_t j = 0; j < NUM_COLS; j++) {
 		oled_write_d(0x0);
 	}
 }
 void oled_reset() {
 	oled_pos(0, 0);
-	for(int i = 0; i < NUM_PAGES; i++) {
+	for(uint8_t i = 0; i < NUM_PAGES; i++) {
 		oled_clear_page(i);
 	}
 	oled_pos(0, 0);
@@ -71,7 +71,7 @@ void oled_pos(uint8_t page, uint8_t column) {
 }
 void oled_print(uint8_t c) {
 	c -= 32; //This stupid, why not ascii?
-	for(int i = 0; i < 8; i++) {
+	for(uint8_t i = 0; i < 8; i++) {
 		oled_write_d(pgm_read_byte(&font8[c][i]));
 	}
 }

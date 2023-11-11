@@ -58,7 +58,7 @@ void CAN0_Handler( void )
 
 		if(DEBUG_INTERRUPT)printf("message id: %d\n\r", message.id);
 		if(DEBUG_INTERRUPT)printf("message data length: %d\n\r", message.data_length);
-		for (int i = 0; i < message.data_length; i++)
+		for (int32_t i = 0; i < message.data_length; i++)
 		{	
 			int8_t test = message.data[i];
 			if(DEBUG_INTERRUPT)printf("%d ", test);

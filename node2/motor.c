@@ -108,12 +108,12 @@ int16_t encoder_read() {
 
     delay_us(30);
 
-    int high_byte = mj2_read();
+    int32_t high_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_SEL_LOW_BYTE_PIN;
 
     delay_us(30);
 
-    int low_byte = mj2_read();
+    int32_t low_byte = mj2_read();
     PIOD->PIO_SODR = ENCODER_OUT_EN_PIN;
     
     return ((high_byte << 8) | (low_byte));

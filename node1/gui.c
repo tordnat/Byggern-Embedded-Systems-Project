@@ -21,7 +21,7 @@ gui_menu_item *gui_menu_item_create(char *text, void (*click_action)(void)) {
 	}
 	return item;
 }
-int gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
+int8_t gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
 	child->parent = parent;
 	if (parent == NULL) {
 		return -1; // Invalid
@@ -43,13 +43,13 @@ int gui_add_child(gui_menu_item *parent, gui_menu_item *child) {
 	return 0;
 	
 }
-int gui_destroy_all_children(gui_menu_item* parent) {
+int32_t gui_destroy_all_children(gui_menu_item* parent) {
 	if (parent == NULL || parent->num_children == 0) {
 		return -1; // Nothing to destroy
 	}
 
 	// Recursively destroy each child
-	for (int i = 0; i < parent->num_children; i++) {
+	for (int32_t i = 0; i < parent->num_children; i++) {
 		gui_menu_item* child = parent->children[i];
 		gui_destroy_all_children(child); // Destroy child's children (if any)
 		free(child);
@@ -95,7 +95,7 @@ gui_menu_item *gui_init() {
 
 void gui_draw_menu(gui_menu_item *item, int8_t selected_item) {
 	oled_reset(); //this should be done smarter, should only reset single pages, not all of them.
-	for(int i = 0; i < item->num_children; i++) {
+	for(int32_t i = 0; i < item->num_children; i++) {
 		oled_pos(i,0);
 		if(i == selected_item) {
 			oled_print(char_arrow);

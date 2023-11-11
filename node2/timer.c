@@ -7,11 +7,11 @@
 #include "timer.h"
 
 //not finished
-int reg_tick;
+int32_t reg_tick;
 void set_reg_tick() {
     reg_tick = 0;
 }
-int get_reg_tick() {
+int32_t get_reg_tick() {
     return reg_tick;
 }
 void timer_init() {

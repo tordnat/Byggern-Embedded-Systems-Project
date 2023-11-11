@@ -10,8 +10,8 @@
 #define JOYSTICK_Y_THRESHOLD 70
 
 // Center calibration globals, initial values 127
-static int joystick_x_center_calibration = 127;
-static int joystick_y_center_calibration = 127;
+static int16_t joystick_x_center_calibration = 127;
+static int16_t joystick_y_center_calibration = 127;
 
 
 joystick_t get_joystick(void){
@@ -23,10 +23,10 @@ joystick_t get_joystick(void){
 
 position_t joystick_get_position(void){
 	position_t pos;
-	int x_meas = (int) adc_read(ADC_JOYSTICK_X_CHAN);
-	int y_meas = (int) adc_read(ADC_JOYSTICK_Y_CHAN);
-	pos.x = (int) ((x_meas - joystick_x_center_calibration)/(float)joystick_x_center_calibration*100.0);
-	pos.y = (int) ((y_meas - joystick_y_center_calibration)/(float)joystick_y_center_calibration*100.0);
+	int16_t x_meas = (int16_t) adc_read(ADC_JOYSTICK_X_CHAN);
+	int16_t y_meas = (int16_t) adc_read(ADC_JOYSTICK_Y_CHAN);
+	pos.x = (int16_t) ((x_meas - joystick_x_center_calibration)/(float)joystick_x_center_calibration*100.0);
+	pos.y = (int16_t) ((y_meas - joystick_y_center_calibration)/(float)joystick_y_center_calibration*100.0);
 	if (pos.x > 100) pos.x = 100;
 	if (pos.y > 100) pos.y = 100;
 	return pos;

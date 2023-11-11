@@ -6,4 +6,4 @@ void delay_us(uint32_t us);
 
 
 void set_reg_tick();
-int get_reg_tick();
+int32_t get_reg_tick();

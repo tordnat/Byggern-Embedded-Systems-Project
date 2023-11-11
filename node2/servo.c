@@ -22,14 +22,14 @@ void servo_set_pos(int8_t pos) {
         return; //add error code
     }
     //TODO: add smoothing
-    int diff = pos - prev_pos;
+    int32_t diff = pos - prev_pos;
     diff = abs(diff);
     if(diff < 3) {
         return;
     }
     prev_pos = pos;
-    //int duty = (((pos - (0)) * (PWM_SERVO_DUTY_MAX - PWM_SERVO_DUTY_MIN))/(100 - (0))) + PWM_SERVO_DUTY_MIN;
-    int duty = map(pos, -100, 0, PWM_SERVO_DUTY_MIN, PWM_SERVO_DUTY_MAX);
+    //int32_t duty = (((pos - (0)) * (PWM_SERVO_DUTY_MAX - PWM_SERVO_DUTY_MIN))/(100 - (0))) + PWM_SERVO_DUTY_MIN;
+    int32_t duty = map(pos, -100, 0, PWM_SERVO_DUTY_MIN, PWM_SERVO_DUTY_MAX);
     //printf("Pos: %d \n\rDuty Cycle value: %d\n\r", pos, duty);
     if((duty <= PWM_SERVO_DUTY_MAX) && (duty >= PWM_SERVO_DUTY_MIN)) {
         pwm_set_duty_channel5(duty);

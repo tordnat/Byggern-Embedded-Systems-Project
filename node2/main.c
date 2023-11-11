@@ -34,10 +34,10 @@ uint8_t goal_scored() {
 CAN_MESSAGE can_msg;
 
 
-int goals = 0;  
-int ref_pos = 0; //Input from node 1
-int prev_encoder_pos = 0; //Prev encoder value
-int current_encoder_pos = 0; //Current encoder value
+int32_t goals = 0;  
+int32_t ref_pos = 0; //Input from node 1
+int32_t prev_encoder_pos = 0; //Prev encoder value
+int32_t current_encoder_pos = 0; //Current encoder value
 
 int main() {
     SystemInit();
@@ -73,7 +73,7 @@ int main() {
             regulator_pos(ref_pos, &prev_encoder_pos);
 
             set_reg_tick();
-            int slider_pos = get_node1_msg().slider; //0-100
+            int32_t slider_pos = get_node1_msg().slider; //0-100
             servo_set_pos(slider_pos);
             if(adc_read() < 900) {
                 goals += 1; //send can message here

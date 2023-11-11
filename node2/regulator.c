@@ -16,21 +16,21 @@
 static int32_t sum_e_pos = 0; 
 static int32_t e_sum = 0;
 
-void regulator_pos(int ref, int *prev_encoder_pos) {
-    int max_steps_encoder = 1407; //get_encoder_calibration();
-    int encoder_val = encoder_read();
+void regulator_pos(int32_t ref, int32_t *prev_encoder_pos) {
+    int32_t max_steps_encoder = 1407; //get_encoder_calibration();
+    int32_t encoder_val = encoder_read();
     int32_t current_pos = map(encoder_val, 0, max_steps_encoder, 0, 100);
-    int e = ref - current_pos;
+    int32_t e = ref - current_pos;
     if((e < 0) && (e > -0)) {
         e = 0;
     }
-    int u = K_P*e + K_I*sum_e_pos;
+    int32_t u = K_P*e + K_I*sum_e_pos;
     //printf("PosU %d PosE %d Ref %d Prev_pos %d\n\r", u, e, ref, *prev_encoder_pos);
     regulator_speed(encoder_val, *prev_encoder_pos, u);
     *prev_encoder_pos = encoder_val;
 }
 
-void regulator_speed(int current_pos, int prev_pos, int ref) {
+void regulator_speed(int32_t current_pos, int32_t prev_pos, int32_t ref) {
     int32_t speed = (current_pos-prev_pos)/0.1; //Will be very large. Needs 32bit
     int32_t e = ref - speed;
 

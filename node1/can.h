@@ -28,8 +28,18 @@ typedef struct {
 	uint8_t goal;	
 } node2_msg_t;
 
+/* Transmits CAN message from message ptr
+/ - Does not modify data pointed to
+*/
 uint8_t can_message_transmit(can_message_t* message);
 can_message_t* get_can_buffer_ptr(void);
 
+/* Encodes a Node 1 message and copies it into a can_message
+/ - Modifies can_message pointer
+*/
 can_message_t* can_encode_node1_msg(node1_msg_t* node1_msg, can_message_t* can_msg);
+
+/* Gets I/O data and encodes it into a Node 1 message
+/ - Calls functions from joystick.c to get I/O values
+*/
 node1_msg_t get_node1_msg(void);

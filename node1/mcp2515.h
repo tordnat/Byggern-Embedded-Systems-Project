@@ -170,7 +170,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_MERRF		0x80
 
 // Global variables
-
+#define MCP_DEBUG		0 // Enable Debug prints
 #define MCP_MAX_DATA_LENGTH 0x8
 #define MCP_BRP			(4-1)
 #define MCP_SJW			(0x3) //0b11 == 4TQ
@@ -181,7 +181,7 @@ Copyright 2003 Kimberly Otten Software Consulting
 
 uint8_t mcp2515_init(void);
 uint8_t mcp2515_transmit_tx0(can_message_t* message);
-uint8_t mcp2515_read_rx0(can_message_t* message_buffer);
+uint8_t mcp2515_read_rx0_to_buffer(can_message_t* message_buffer);
 uint8_t mcp2515_read_status(uint8_t status_mask);
 uint8_t mcp2515_read(uint8_t address);
 uint8_t mcp2515_write(uint8_t address, uint8_t value);

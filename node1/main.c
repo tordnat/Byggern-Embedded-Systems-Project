@@ -45,20 +45,17 @@ int main(void)
 	msg = get_node1_msg();
 	can_encode_node1_msg(&msg, &test_message);
 	mcp2515_transmit_tx0(&test_message);
-	_delay_ms(1);
-	uint8_t value = buffer->data[0];
+	printf("Joystick: %i \n\r", msg.joystick.axis.x);
 	if(can_is_interrupt){
-		printf("Interupt!: %i \n\r", mcp2515_interrupt_flags);
-		printf("Receive: %i \n\r", value);
 		can_is_interrupt = 0;	
 	}
 
-	
+	/*
 
 	
-		/*
+		
 		//Animation loop and sampling should be done independently. Important to have some time between samples. 
-		position joystick_pos = joystick_get_position();
+		position_t joystick_pos = joystick_get_position();
 		joystick_dir = joystick_get_direction(joystick_pos);
 		_delay_ms(30);
 		//gui_goto_menu(&gui_menu_current, &selected_item, &joystick_dir, &prev_joystick_dir);
@@ -98,7 +95,7 @@ int main(void)
 		
 		
 		
+		*/
 		
-		*/	
 	}
 }

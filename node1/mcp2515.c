@@ -22,6 +22,7 @@ uint8_t mcp2515_init(){
 	mcp2515_reset(); //Send reset command
 	_delay_ms(1);
 	uint8_t status = mcp2515_read(MCP_CANSTAT);
+	
 	if ((status & MODE_MASK) != MODE_CONFIG){
 		printf("CAN controller not in CONFIG, mode=%i", status);
 		return 1;
@@ -53,12 +54,13 @@ uint8_t mcp2515_transmit_tx0(can_message_t* message){
 	return 0;
 }
 
-uint8_t mcp2515_read_rx0(can_message_t* message_buffer){
+uint8_t mcp2515_read_rx0_to_buffer(can_message_t* message_buffer){
+	
 	if (!(mcp2515_read_status(STATUS_RX0IF))){
 		printf("Err: Receive flag not set\n\r");
 		return 1;
 	}
-	message_buffer->id = (mcp2515_read(MCP_RXB0SIDL) >> SIDL_ROFFSET); // = to clear prev values 
+	message_buffer->id = (mcp2515_read(MCP_RXB0SIDL) >> SIDL_ROFFSET); // = to clear previous values 
 	message_buffer->id |= (mcp2515_read(MCP_RXB0SIDH) << SIDH_LOFFSET);
 	message_buffer->data_length = mcp2515_read(MCP_RXB0DLC);
 	for (int i = 0; i < message_buffer->data_length; ++i){
@@ -97,10 +99,11 @@ static uint8_t mcp2515_bit_modify(uint8_t address, uint8_t mask, uint8_t value){
 	spi_transmit(mask);
 	spi_transmit(value);
 	mcp2515_disable();
-	//if(mcp2515_register_verify(address, value, mask)){ //This does not propperly test
-	//	printf("ERR: Unexpected value verifying\n\r");
-	//	return 1;
-	//}
+	
+	if(mcp2515_register_verify(address, value, mask)){
+		printf("ERR: Unexpected value verifying\n\r");
+		return 1;
+	}
 	return 0;
 }
 
@@ -124,18 +127,19 @@ uint8_t mcp2515_write(uint8_t address, uint8_t value){
 		printf("ERR: Unexpected value verifying\n\r");
 		return 1;
 	}
-	
 	return 0;
 }
 
-static uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){
-	_delay_ms(2);
+//Debug tool
+static uint8_t mcp2515_register_verify(uint8_t address, uint8_t expected_value, uint8_t bit_mask){ 
+	if (!MCP_DEBUG) return 0;
+	_delay_ms(2); // Do NOT deploy: Will affect CAN transmission rate!!
 	uint8_t data = mcp2515_read(address);
 	if ((data & bit_mask) != expected_value){
 		printf("R:%i Expected: %u, Read: %u\n\r", address, expected_value, data&bit_mask);
 		mcp2515_disable();
-		return 1; //Should assert!!!
-	} //MAybe implement error counter
+		return 1;
+	}
 	return 0;
 }
 

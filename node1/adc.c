@@ -18,15 +18,13 @@ void adc_init(void) {
 
 uint8_t adc_read(int channel) {
 	volatile char* adc_mem = (char*) ADC_ADDRESS;
-	volatile char read_val; //init read
+	volatile char read_val; //Init read
 	
-	adc_mem[0] = 0; //Write to adc to activate
-	//_delay_ms((9*(1*2))/819200);
+	adc_mem[0] = 0; //Activate ADC by writing to it
 	_delay_us(20);
-	for(int i = 0; i <= channel; i++) {
+	for(int i = 0; i <= channel; i++) { //Channel X is by X consecutive writes
 		read_val = adc_mem[0x0];
 	}
-
 	return read_val;
 }
 

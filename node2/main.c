@@ -16,11 +16,11 @@
 #include "servo.h"
 #include "regulator.h"
 #include "encoder.h"
+#include "game.h"
 
 #define LED1 23
 #define LED2 19
 #define MCK 84000000
-#define CAN_TX_MAILBOX_ID 0
 
 uint8_t goal_scored() {
     uint16_t adc_val = adc_read();
@@ -35,7 +35,6 @@ uint8_t goal_scored() {
 CAN_MESSAGE can_msg;
 
 
-int32_t goals = 0;  
 int32_t ref_pos = 0; //Input from node 1
 int32_t prev_encoder_pos = 0; //Prev encoder value
 int32_t current_encoder_pos = 0; //Current encoder value
@@ -58,31 +57,32 @@ int main() {
 
     printf("Everything inited\n\rCalibrating...\n\r");
     encoder_calibrate();
-    printf("%d\n\r", encoder_get_total_encoder_steps());
     printf("Finished calibration\n\r\n\r");
-
+    int32_t ref_pos = (get_node1_msg().joystickX+100)/2; 
+    int32_t servo_pos = get_node1_msg().slider; //0-100
+    uint8_t solenoid_pos = get_node1_msg().btn;
     while (1) {
        if(get_reg_tick()) {
-            ref_pos = (get_node1_msg().joystickX+100)/2;
-
-            regulator_pos(ref_pos, &prev_encoder_pos);
-
             set_reg_tick();
-            int32_t slider_pos = get_node1_msg().slider; //0-100
-            servo_set_pos(slider_pos);
-            if(adc_read() < 900) {
-                goals += 1; //send can message here
-                motor_set_speed(1, 0);
-                while(get_node1_msg().btn); //Goal scored, game must be reset
+            //Game state machine
+            switch (get_state()) {
+                case NODE1_PLAYING:
+                    ref_pos = (get_node1_msg().joystickX+100)/2;
+                    servo_pos = get_node1_msg().slider; //0-100
+                    solenoid_pos = get_node1_msg().btn;
+                    game_loop(servo_pos, solenoid_pos);
+                    break;
+                case NODE3_PLAYING:
+                    //recieve
+                    game_loop(servo_pos, solenoid_pos);
+                    break;
+                case STOPPED:
+                    ref_pos = 50;
+                    game_stop();
+                    break;
             }
-            if(get_node1_msg().btn) {
-                solenoid_on();
-            } else {
-                solenoid_off();
-            }
+            regulator_pos(ref_pos, &prev_encoder_pos);
        }
-        //printf("e %d sum %d \n\r", e, sum_e);
-        //printf("encoder ref timer %d %d %d\n\r", ref_pos, encoder_read(), timer_read());
     }
 }
 

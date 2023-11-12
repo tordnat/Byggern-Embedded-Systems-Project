@@ -9,7 +9,7 @@
 #define K_I 0.15//4000
 
 //Speed regulator
-#define SPEED_K_P 15
+#define SPEED_K_P 10
 #define SPEED_K_I 0
 
 #define TICK_SIZE_S 0.05

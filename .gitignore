@@ -5,3 +5,4 @@ Debug/*
 node2/build/*
 node2/sam/*
 .vscode/*
+test

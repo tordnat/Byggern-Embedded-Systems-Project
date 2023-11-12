@@ -16,11 +16,16 @@
 #include "../uart_and_printf/printf-stdarg.h"
 #include "solenoid.h"
 #include "can_controller.h"
+#include "game.h"
 
 static node1_msg node1_buffer;
+static node3_msg node3_buffer;
 
 node1_msg get_node1_msg(void) {
 	return node1_buffer;
+}
+node3_msg get_node3_msg(void) {
+	return node3_buffer;
 }
 
 #define DEBUG_INTERRUPT 0
@@ -63,15 +68,23 @@ void CAN0_Handler( void )
 			int8_t test = message.data[i];
 			if(DEBUG_INTERRUPT)printf("%d ", test);
 		}
-		//Node 1
-		if(message.id == 0x66) {
-			//printf("Recieved from 0x66\n\r");
-			decode_can_node1_msg(&message , &node1_buffer);
-			//printf("Data %d %d %d %d %d \n\r", message.data_length, message.data[0], message.data[1], message.data[2], message.data[3]);
-		}
-		//Node 3
-		if(1) {
-			printf("recieved from node3\n\r");
+		switch (message.id) {
+			case CAN_ID_GAME_CTRL:
+				//printf("Recieved from 0x66\n\r");
+				if(message.data_length == 4) {
+					decode_can_node1_msg(&message , &node1_buffer);
+				}
+				//printf("Data %d %d %d %d %d \n\r", message.data_length, message.data[0], message.data[1], message.data[2], message.data[3]);
+				break;
+			case CAN_ID_GAME_NODE1_START:
+				printf("Got start message\n\r");
+				if(get_state() == STOPPED) {
+					game_set_node1_state();
+				}
+				break;
+			case CAN_ID_GAME_NODE3_START:
+				/* code */
+				break;
 		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");

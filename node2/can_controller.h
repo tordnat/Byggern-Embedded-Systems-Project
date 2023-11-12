@@ -12,7 +12,15 @@
 #ifndef CAN_CONTROLLER_H_
 #define CAN_CONTROLLER_H_
 
+#define CAN_ID_GAME_CTRL  0x0 // Only sent by node 2
+#define CAN_ID_GAME_NODE1_START 0x2 // Only sent by node 1
+#define CAN_ID_GAME_SCORE 0x3 // Only sent by node 2, recieved by node 1
+#define CAN_ID_GAME_STOP  0x4 // Only sent by node 1 and 3
+#define CAN_ID_GAME_NODE3_START 0x5 // Only sent by node 3
+
 #include <stdint.h>
+
+#define CAN_TX_MAILBOX_ID 0
 
 typedef struct can_message_t
 {
@@ -29,8 +37,12 @@ typedef struct node1_msg {
 } node1_msg;
 
 typedef struct node2_msg {
-	uint8_t goal;
+	uint16_t score;
 } node2_msg;
+
+typedef struct node3_msg {
+
+} node3_msg;
 node1_msg get_node1_msg(void);
 
 uint8_t can_init_def_tx_rx_mb(uint32_t can_br);

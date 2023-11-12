@@ -64,7 +64,9 @@ void game_loop(int32_t servo_pos, uint8_t solenoid) {
 void game_set_node1_state() {
     state = NODE1_PLAYING;
 }
-
+void game_set_node1_state() {
+    state = NODE3_PLAYING;
+}
 enum game_state_enum get_state() {
     return state;
 }

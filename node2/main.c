@@ -73,7 +73,8 @@ int main() {
                     game_loop(servo_pos, solenoid_pos);
                     break;
                 case NODE3_PLAYING:
-                    //recieve
+                    servo_pos = map(get_node3_msg().x_pos, 0, 1000, 0, 100);
+                    solenoid_pos = (get_node3_msg().y_pos < 290);
                     game_loop(servo_pos, solenoid_pos);
                     break;
                 case STOPPED:

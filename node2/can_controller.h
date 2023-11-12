@@ -41,8 +41,10 @@ typedef struct node2_msg {
 } node2_msg;
 
 typedef struct node3_msg {
-
+	uint16_t x_pos;
+	uint16_t y_pos;
 } node3_msg;
+
 node1_msg get_node1_msg(void);
 
 uint8_t can_init_def_tx_rx_mb(uint32_t can_br);

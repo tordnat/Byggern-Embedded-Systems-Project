@@ -12,8 +12,8 @@
 #ifndef CAN_INTERRUPT_H_
 #define CAN_INTERRUPT_H_
 void CAN0_Handler       ( void );
-
-
+node1_msg get_node1_msg(void);
+node3_msg get_node3_msg(void);
 
 
 

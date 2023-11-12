@@ -83,7 +83,9 @@ void CAN0_Handler( void )
 				}
 				break;
 			case CAN_ID_GAME_NODE3_START:
-				/* code */
+				if(get_state() == STOPPED) {
+					game_set_node3_state();
+				}
 				break;
 		}
 

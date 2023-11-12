@@ -4,6 +4,7 @@
 #include <pwm.h>
 #include "servo.h"
 #include "utils.h"
+#include "can_controller.h"
 
 #define PWM_SERVO_DUTY_MIN 82
 #define PWM_SERVO_DUTY_MAX 164
@@ -16,8 +17,8 @@ void servo_init(void) {
 
 void servo_set_pos(int8_t pos) {
     //Invalid position
-    if(pos > 100) {
-        printf("Pos outside valid range %d\n\r", pos);
+    if((pos > 100) || (pos < 0)) {
+        printf("Pos outside valid range %d slider:%d\n\r", pos, get_node1_msg().slider);
         return;
     }
     //To prevent twitching from inaccurate slider values

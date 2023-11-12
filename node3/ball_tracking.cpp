@@ -223,7 +223,7 @@ int main() {
         for (int i = 0; i < markerCorners.size(); i++) {
             cv::circle(frame, centers[i], 3, cv::Scalar(0, 0, 255), -1);
           }
-      }
+
 
       cv::Mat cropped_frame = cropFrameByMarkers(frame, markerIds, centers);
       ball = detectBall(cropped_frame);
@@ -232,6 +232,7 @@ int main() {
               ball = adjustForCropping(ball, crop_rect);
               visualizeActuatorAndBall(frame, ball, actuator_center);
 
+      }
       }
       cv::imshow("Frame", frame);
       if(cv::waitKey(1) >= 0) break;

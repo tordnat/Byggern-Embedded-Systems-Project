@@ -1,5 +1,8 @@
 #pragma once
 #include <string.h>
-
-void serial_init(std::string port);
-int serial_send(std::string msg);
+#include <iostream>
+#include <string>
+#include <boost/asio.hpp>
+#include <boost/asio/serial_port.hpp>
+#include <boost/asio/serial_port_base.hpp>
+#include <boost/asio/streambuf.hpp>

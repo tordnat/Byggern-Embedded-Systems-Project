@@ -4,6 +4,7 @@
 #include <boost/asio/serial_port.hpp>
 #include <boost/asio/serial_port_base.hpp>
 #include <boost/asio/streambuf.hpp>
+#include "serial_transmit.h"
 
 #define BAUD_RATE 115200
 using namespace std;
@@ -12,6 +13,11 @@ using namespace boost::asio;
 io_service io;
 serial_port *sp_ptr;
 boost::asio::streambuf buf;
+
+/* Taken from Apple forums
+* - https://developer.apple.com/forums/thread/697472
+*/
+
 
 void serial_init(std::string port){
     serial_port sp(io, port);
@@ -27,6 +33,7 @@ void serial_init(std::string port){
 int serial_send(std::string msg){
     boost::asio::write(*sp_ptr, buffer(msg));
     string data = buffer_cast<const char*>(buf.data());
+    read_until(*sp_ptr, buf, ""); // REMOVE ME!!
     cout << data << endl;
     return 0;
 }

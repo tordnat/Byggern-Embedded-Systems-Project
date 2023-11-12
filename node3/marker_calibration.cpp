@@ -1,9 +1,0 @@
-#include <cstddef>
-#include <iostream>
-#include <opencv2/core.hpp>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <vector>
-#include "marker_calibration.h"
-#include "opencv2/aruco.hpp"

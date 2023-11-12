@@ -8,6 +8,11 @@
 #include "marker_calibration.h"
 
 using namespace cv;
+cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
+cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+cv::aruco::ArucoDetector detector(dictionary, detectorParams);
+
+#define NUM_MARKERS 5
 
 void visualizeBallTracking(cv::Mat& frame, const cv::Point2f& ballPosition) {
     if (ballPosition.x >= 0 && ballPosition.y >= 0) {
@@ -64,6 +69,45 @@ cv::Point2f detectBall(const cv::Mat& frame) {
     return cv::Point2f(-1, -1); // Return an invalid point if not found
 }
 
+cv::Mat cropFrameByMarkers(const cv::Mat& frame, 
+                           const std::vector<int> markerIds,
+                           const std::vector<cv::Point2f> centers) {
+    // Define points for each corner marker
+    if(markerIds.size() != NUM_MARKERS)  return frame;
+    cv::Point2f topLeft, topRight, bottomLeft, bottomRight;
+
+    for (size_t i = 0; i < markerIds.size(); i++) {
+
+        // Assign center to corresponding variable based on marker ID
+        switch(markerIds[i]) {
+            case MARKER_ID_TOP_LEFT:
+                topLeft = centers[i];
+                break;
+            case MARKER_ID_TOP_RIGHT:
+                topRight = centers[i];
+                break;
+            case MARKER_ID_BOTTOM_LEFT:
+                bottomLeft = centers[i];
+                break;
+            case MARKER_ID_BOTTOM_RIGHT:
+                bottomRight = centers[i];
+                break;
+            // Add case for MARKER_ID_ACTUATOR if needed
+        }
+    }
+
+    // Use these points to define the cropping rectangle
+    float minX = std::min({topLeft.x, topRight.x, bottomLeft.x, bottomRight.x});
+    float minY = std::min({topLeft.y, topRight.y, bottomLeft.y, bottomRight.y});
+    float maxX = std::max({topLeft.x, topRight.x, bottomLeft.x, bottomRight.x});
+    float maxY = std::max({topLeft.y, topRight.y, bottomLeft.y, bottomRight.y});
+
+    cv::Rect cropRect(minX, minY, maxX - minX, maxY - minY);
+    cv::Mat croppedFrame = frame(cropRect);
+
+    return croppedFrame;
+}
+
 
 int main() {
   cv::VideoCapture cap(0);
@@ -78,12 +122,37 @@ int main() {
       cv::Point2f ball;
       cv::Mat frame;
       cap >> frame;
-      ball = detectBall(frame);
-      visualizeBallTracking(frame, ball);
+
       
       //string msg = std::format("Ball Distance Vector: {},{}", ball_distance_vector.x, ball_distance_vector.y)
       //serial_send("Ball Distance Vector: {%i,%i}")
-      cv::imshow("Frame", frame);
+
+      std::vector<int> markerIds;
+      std::vector<std::vector<cv::Point2f>> markerCorners;
+      std::vector<std::vector<cv::Point2f>> rejected;
+      std::vector<cv::Point2f> centers;
+      detector.detectMarkers(frame, markerCorners, markerIds, rejected);
+      if (markerIds.size() >= 4){
+      for (auto& corners : markerCorners) {
+        cv::Point2f center(0, 0);
+        for (auto& corner : corners) {
+            center.x += corner.x;
+            center.y += corner.y;
+        }
+        center.x /= corners.size();
+        center.y /= corners.size();
+        centers.push_back(center);
+      }
+      cv::aruco::drawDetectedMarkers(frame, markerCorners, markerIds);
+        for (int i = 0; i < markerCorners.size(); i++) {
+            cv::circle(frame, centers[i], 3, cv::Scalar(0, 0, 255), -1);
+          }
+      }
+
+      cv::Mat cropped_frame = cropFrameByMarkers(frame, markerIds, centers);
+      ball = detectBall(cropped_frame);
+      visualizeBallTracking(cropped_frame, ball);
+      cv::imshow("Frame", cropped_frame);
       if(cv::waitKey(1) >= 0) break;
     }
     cap.release();

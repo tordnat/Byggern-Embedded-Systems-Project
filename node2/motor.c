@@ -11,9 +11,9 @@ void motor_init(void) {
     PIOD->PIO_WPMR &= ~PIO_WPMR_WPEN; //Write protect disable
     PMC->PMC_PCER0 |= PMC_PCER0_PID14; //Enable clock for PIOD
 
-    PIOD->PIO_PER |= MOTOR_DIR_PIN; //enable pin
-    PIOD->PIO_OER |= MOTOR_DIR_PIN; //enable output
-    PIOD->PIO_SODR = MOTOR_DIR_PIN;
+    PIOD->PIO_PER |= MOTOR_DIR_PIN; //Enable pin
+    PIOD->PIO_OER |= MOTOR_DIR_PIN; //Enable output
+    PIOD->PIO_SODR = MOTOR_DIR_PIN; //Set high
 }
 
 void motor_set_speed(uint8_t direction, uint16_t speed) {

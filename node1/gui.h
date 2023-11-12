@@ -31,3 +31,4 @@ void gui_draw_menu(gui_menu_item *item, int8_t selected_item);
 * Menu loop
 */
 void gui_goto_menu(gui_menu_item **gui_menu_current);
+void gui_game_pong();

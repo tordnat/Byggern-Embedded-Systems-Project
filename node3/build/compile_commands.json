@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -isystem /opt/homebrew/Cellar/opencv/4.8.1_2/include/opencv4 -isystem /opt/homebrew/include -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -o CMakeFiles/ball_tracking.dir/ball_tracking.cpp.o -c /Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/ball_tracking.cpp",
+  "file": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/ball_tracking.cpp",
+  "output": "CMakeFiles/ball_tracking.dir/ball_tracking.cpp.o"
+},
+{
+  "directory": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -isystem /opt/homebrew/Cellar/opencv/4.8.1_2/include/opencv4 -isystem /opt/homebrew/include -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -o CMakeFiles/ball_tracking.dir/marker_calibration.cpp.o -c /Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/marker_calibration.cpp",
+  "file": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/marker_calibration.cpp",
+  "output": "CMakeFiles/ball_tracking.dir/marker_calibration.cpp.o"
+},
+{
+  "directory": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/build",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -isystem /opt/homebrew/Cellar/opencv/4.8.1_2/include/opencv4 -isystem /opt/homebrew/include -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk -o CMakeFiles/ball_tracking.dir/serial_transmit.cpp.o -c /Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/serial_transmit.cpp",
+  "file": "/Users/tordnatlandsmyr/Library/CloudStorage/OneDrive-NTNU/Embedded_Systems_TTK4155/node3/serial_transmit.cpp",
+  "output": "CMakeFiles/ball_tracking.dir/serial_transmit.cpp.o"
+}
+]

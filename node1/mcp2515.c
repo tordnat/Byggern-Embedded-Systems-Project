@@ -39,7 +39,7 @@ uint8_t mcp2515_init(){
 	// Enable interrupt on receive
 	mcp2515_write(MCP_CANINTE, 0x01); //Interrupt on message received in RXB0
 	mcp2515_bit_modify(MCP_CANCTRL, MODE_MASK, MODE_ONESHOT); // Setting initial mode
-	mcp2515_bit_modify(MCP_CANINTE, 0x1 | 0x2, 0xFF); //Set bits RX1IF and RX0IF HIGH
+	mcp2515_bit_modify(MCP_CANINTE, 0x1, 0xFF); //Set bits RX0IF HIGH
 	// Set initial mode
 	return 0;
 }
@@ -57,7 +57,7 @@ uint8_t mcp2515_transmit_tx0(can_message_t* message){
 uint8_t mcp2515_read_rx0_to_buffer(can_message_t* message_buffer){
 	
 	if (!(mcp2515_read_status(STATUS_RX0IF))){
-		printf("Err: Receive flag not set\n\r");
+		printf("Err: Interrupt flag not handled\n\r");
 		return 1;
 	}
 	message_buffer->id = (mcp2515_read(MCP_RXB0SIDL) >> SIDL_ROFFSET); // = to clear previous values 

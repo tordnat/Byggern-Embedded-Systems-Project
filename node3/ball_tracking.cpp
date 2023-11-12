@@ -2,17 +2,24 @@
 #include <opencv2/core.hpp>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 #include "serial_transmit.h"
 #include "marker_calibration.h"
 
 using namespace cv;
+
+cv::Rect crop_rect;
+
 cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
 cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 cv::aruco::ArucoDetector detector(dictionary, detectorParams);
 
 #define NUM_MARKERS 5
+#define CAM_HEIGHT 1080
+#define CAM_WIDTH   1920
 
 void visualizeBallTracking(cv::Mat& frame, const cv::Point2f& ballPosition) {
     if (ballPosition.x >= 0 && ballPosition.y >= 0) {
@@ -29,6 +36,17 @@ void visualizeBallTracking(cv::Mat& frame, const cv::Point2f& ballPosition) {
         cv::putText(frame, positionText, ballPosition + cv::Point2f(10, 10),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, color, 1);
     }
+}
+
+
+void visualizeActuatorAndBall(cv::Mat& frame, const cv::Point2f& ballPosition, const cv::Point2f& actuatorCenter){
+  if (actuatorCenter.x >= 0 && actuatorCenter.y >= 0) {
+  visualizeBallTracking(frame, ballPosition);
+  const cv::Scalar color(0, 255, 0); // Green color
+  const int thickness = 2; // Thickness of the circle outline
+  //cv::arrowedLine(frame, actuatorCenter, ballPosition, color, thickness, cv::LINE_8, 0, 0);
+  cv::arrowedLine(frame, actuatorCenter, ballPosition, color);
+  }
 }
 
 cv::Point2f detectBall(const cv::Mat& frame) {
@@ -96,16 +114,68 @@ cv::Mat cropFrameByMarkers(const cv::Mat& frame,
         }
     }
 
-    // Use these points to define the cropping rectangle
-    float minX = std::min({topLeft.x, topRight.x, bottomLeft.x, bottomRight.x});
-    float minY = std::min({topLeft.y, topRight.y, bottomLeft.y, bottomRight.y});
-    float maxX = std::max({topLeft.x, topRight.x, bottomLeft.x, bottomRight.x});
-    float maxY = std::max({topLeft.y, topRight.y, bottomLeft.y, bottomRight.y});
+    // Initialize variables to the first center's coordinates
+    float minX = centers[0].x;
+    float minY = centers[0].y;
+    float maxX = centers[0].x;
+    float maxY = centers[0].y;
 
-    cv::Rect cropRect(minX, minY, maxX - minX, maxY - minY);
-    cv::Mat croppedFrame = frame(cropRect);
+    // Process each marker
+    for (size_t i = 0; i < markerIds.size(); i++) {
+        const cv::Point2f& center = centers[i];
+
+        // Update the min and max values
+        minX = std::min(minX, center.x);
+        minY = std::min(minY, center.y);
+        maxX = std::max(maxX, center.x);
+        maxY = std::max(maxY, center.y);
+    }
+
+    // Use these points to define the cropping rectangle
+    minX = std::max(minX, 0.f);
+    minY = std::max(minY, 0.f);
+    maxX = std::min(maxX, static_cast<float>(frame.cols));
+    maxY = std::min(maxY, static_cast<float>(frame.rows));
+    float width = maxX - minX;
+    float height = maxY - minY;
+
+    if(width <= 0 || height <= 0) {
+        std::cerr << "Invalid cropping rectangle dimensions." << std::endl;
+        return frame; // Return the original frame or handle the error as appropriate
+    }
+
+    cv::Rect cropRect(minX, minY, width, height);
+    crop_rect = cropRect; //Update global crop rect
+    // Check if the cropRect is entirely within the frame bounds
+    if(minX < 0 || minY < 0 || maxX > frame.cols || maxY > frame.rows) {
+        std::cerr << "Cropping rectangle is out of bounds." << std::endl;
+        return frame;
+    }
+
+
+    cv::Mat croppedFrame;
+    // Safely create the cropped frame
+    if (cropRect.width > 0 && cropRect.height > 0) {
+        croppedFrame = frame(cropRect);
+    }
 
     return croppedFrame;
+}
+
+cv::Point2f get_actuator_center(const std::vector<int> markerIds, const std::vector<cv::Point2f> centers){
+  for (size_t i = 0; i < markerIds.size(); i++) {
+    if (markerIds[i] == MARKER_ID_ACTUATOR){
+      return centers[i];
+    }      
+  }
+  return cv::Point2f(-1, -1);
+}
+
+cv::Point2f adjustForCropping(const cv::Point2f& pointInCroppedFrame, const cv::Rect& cropRect) {
+    if (pointInCroppedFrame.x < 0 || pointInCroppedFrame.y < 0){
+      return pointInCroppedFrame;
+    }
+    return cv::Point2f(pointInCroppedFrame.x + cropRect.x, pointInCroppedFrame.y + cropRect.y);
 }
 
 
@@ -120,9 +190,14 @@ int main() {
   // Game loop
     while (1) {
       cv::Point2f ball;
+      cv::Point2f prev_ball;
+      cv::Point2f actuator_center;
       cv::Mat frame;
-      cap >> frame;
 
+      cap >> frame;
+      if (frame.empty()) {
+        std::cout << "Frame is empty" << std::endl;
+      }
       
       //string msg = std::format("Ball Distance Vector: {},{}", ball_distance_vector.x, ball_distance_vector.y)
       //serial_send("Ball Distance Vector: {%i,%i}")
@@ -131,8 +206,9 @@ int main() {
       std::vector<std::vector<cv::Point2f>> markerCorners;
       std::vector<std::vector<cv::Point2f>> rejected;
       std::vector<cv::Point2f> centers;
+    
       detector.detectMarkers(frame, markerCorners, markerIds, rejected);
-      if (markerIds.size() >= 4){
+      if (markerIds.size() == NUM_MARKERS){
       for (auto& corners : markerCorners) {
         cv::Point2f center(0, 0);
         for (auto& corner : corners) {
@@ -151,8 +227,13 @@ int main() {
 
       cv::Mat cropped_frame = cropFrameByMarkers(frame, markerIds, centers);
       ball = detectBall(cropped_frame);
-      visualizeBallTracking(cropped_frame, ball);
-      cv::imshow("Frame", cropped_frame);
+      actuator_center = get_actuator_center(markerIds, centers);
+      if ((ball != cv::Point2f(-1, -1) )&& (actuator_center != cv::Point2f(-1, -1))){
+              ball = adjustForCropping(ball, crop_rect);
+              visualizeActuatorAndBall(frame, ball, actuator_center);
+
+      }
+      cv::imshow("Frame", frame);
       if(cv::waitKey(1) >= 0) break;
     }
     cap.release();

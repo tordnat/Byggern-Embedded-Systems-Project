@@ -1,8 +1,12 @@
 .DS_Store
+.cache
 .vs
 Debug/
 Debug/*
 node2/build/*
 node2/sam/*
+Build/*
+build
+build/*
 .vscode/*
 test

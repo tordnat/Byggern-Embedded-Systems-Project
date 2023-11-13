@@ -1,3 +1,5 @@
+#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h>
 #include <opencv2/core.hpp>
 #include <iostream>
 #include <ostream>
@@ -29,8 +31,8 @@ int main() {
 
     sp.set_option(boost::asio::serial_port_base::baud_rate(115200));
 
-    char data[10];
     boost::system::error_code ec;
+    uint32_t serial_data;
 
 
   //cv::VideoCapture cap(0);
@@ -67,8 +69,8 @@ int main() {
                     visualize_ball_and_actuator(frame, adjust_for_cropping(ball_pos, cropping_rectangle), actuator_center);
                     actuator_center_prev = actuator_center;
 
-                    int ball_to_actuator_x_dist = ball_pos.y;
-                    boost::asio::write(sp, boost::asio::buffer(std::to_string(ball_to_actuator_x_dist)), ec);
+                    serial_data = (uint16_t)(ball_pos.x) | (uint16_t)(ball_pos.y) >> 16;
+                    boost::asio::write(sp, boost::asio::buffer(std::to_string(serial_data)), ec);
                     // Read from the serial port
                     //size_t len = sp.read_some(boost::asio::buffer(data), ec);
                     //std::cout.write(data, len);

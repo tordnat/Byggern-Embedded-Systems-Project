@@ -25,16 +25,16 @@ int main() {
     */
 
     boost::asio::io_service io;
-   boost::asio::serial_port sp(io, "/dev/tty.usbserial-1410");
-   sp.set_option(boost::asio::serial_port_base::baud_rate(115200));
-   sp.set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
-   sp.set_option(boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none));
-   sp.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
-   sp.set_option(boost::asio::serial_port_base::character_size(8));
+    boost::asio::serial_port sp(io, "/dev/tty.usbserial-11440");
 
-   boost::asio::streambuf buf;
+    sp.set_option(boost::asio::serial_port_base::baud_rate(115200));
 
-  cv::VideoCapture cap(0);
+    char data[10];
+    boost::system::error_code ec;
+
+
+  //cv::VideoCapture cap(0);
+  cv::VideoCapture cap("../test_data/tracking_test2.mp4"); // Testing
   if (!cap.isOpened()){
     std::cerr << "Error: Camera could not be opened!" << std::endl;
   }
@@ -53,7 +53,6 @@ int main() {
 
     while (1) {
         cap >> frame;
-
         if (frame.empty()) {
         std::cout << "Frame is empty!" << std::endl;
         }
@@ -69,8 +68,10 @@ int main() {
                     actuator_center_prev = actuator_center;
 
                     int ball_to_actuator_x_dist = ball_pos.y;
-                    std::cout << ball_to_actuator_x_dist << std::endl;
-                    sp.write_some(boost::asio::buffer((std::to_string(ball_to_actuator_x_dist))));
+                    boost::asio::write(sp, boost::asio::buffer(std::to_string(ball_to_actuator_x_dist)), ec);
+                    // Read from the serial port
+                    //size_t len = sp.read_some(boost::asio::buffer(data), ec);
+                    //std::cout.write(data, len);
                     
             } else if(ball_pos != cv::Point2f(-1, -1)){
                 visualize_ball_and_actuator(frame, adjust_for_cropping(ball_pos, cropping_rectangle), actuator_center_prev);

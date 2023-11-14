@@ -209,3 +209,7 @@ void decode_can_node1_msg(CAN_MESSAGE* msg, node1_msg *data) {
 	data->btn = msg->data[2];
 	data->slider = msg->data[3];
 }
+void decode_can_node3_msg(CAN_MESSAGE* msg, node3_msg *data) {
+	data->x_pos = msg->data[0] | (msg->data[1] << 8);
+	data->y_pos = msg->data[2] | (msg->data[3] << 8);
+}

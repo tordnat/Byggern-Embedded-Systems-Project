@@ -43,7 +43,8 @@ static void game_update_score() {
 }
 void game_loop(int32_t servo_pos, uint8_t solenoid) {
     servo_set_pos(servo_pos);
-    if (adc_read() < ADC_STOP_THRESHOLD) {
+    if(get_state() != NODE3_PLAYING) {
+        if ((adc_read() < ADC_STOP_THRESHOLD)) {
         delay_us(10000);
         if(adc_read() > ADC_STOP_THRESHOLD) return;
 
@@ -51,7 +52,7 @@ void game_loop(int32_t servo_pos, uint8_t solenoid) {
         game_stop();
         return;
     }
-
+    }
     if (solenoid) {
         solenoid_on();
     } else {
@@ -64,7 +65,7 @@ void game_loop(int32_t servo_pos, uint8_t solenoid) {
 void game_set_node1_state() {
     state = NODE1_PLAYING;
 }
-void game_set_node1_state() {
+void game_set_node3_state() {
     state = NODE3_PLAYING;
 }
 enum game_state_enum get_state() {

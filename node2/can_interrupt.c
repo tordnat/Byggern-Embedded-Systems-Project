@@ -70,11 +70,9 @@ void CAN0_Handler( void )
 		}
 		switch (message.id) {
 			case CAN_ID_GAME_CTRL:
-				//printf("Recieved from 0x66\n\r");
 				if(message.data_length == 4) {
 					decode_can_node1_msg(&message , &node1_buffer);
 				}
-				//printf("Data %d %d %d %d %d \n\r", message.data_length, message.data[0], message.data[1], message.data[2], message.data[3]);
 				break;
 			case CAN_ID_GAME_NODE1_START:
 				printf("Got start message\n\r");
@@ -87,6 +85,8 @@ void CAN0_Handler( void )
 					game_set_node3_state();
 				}
 				break;
+			case CAN_ID_GAME_NODE3_CTRL:
+				decode_can_node3_msg(&message , &node3_buffer);
 		}
 
 		if(DEBUG_INTERRUPT)printf("\n\r");

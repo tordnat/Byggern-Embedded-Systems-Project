@@ -73,13 +73,19 @@ int main() {
                     game_loop(servo_pos, solenoid_pos);
                     break;
                 case NODE3_PLAYING:
-                    servo_pos = map(get_node3_msg().x_pos, 0, 1000, 0, 100);
-                    solenoid_pos = (get_node3_msg().y_pos < 290);
+                    if((get_node3_msg().x_pos <= 0) || (get_node3_msg().y_pos <= 0)) { //invalid states
+                        break;
+                    }
+                    ref_pos = map(get_node3_msg().x_pos, 765, 1600, 99, 1);
+                    printf("Node3 %d %d %d\n\r", get_node3_msg().x_pos, get_node3_msg().y_pos, ref_pos);
+                    solenoid_pos = (get_node3_msg().y_pos > 305);
+                    
                     game_loop(servo_pos, solenoid_pos);
                     break;
                 case STOPPED:
                     ref_pos = 50;
                     game_stop();
+                    delay_us(10000);
                     break;
             }
             regulator_pos(ref_pos, &prev_encoder_pos);

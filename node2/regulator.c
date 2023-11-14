@@ -5,12 +5,12 @@
 #include "encoder.h"
 
 //Position regulator
-#define K_P 6//70
-#define K_I 0.15//4000
+#define K_P 7//70
+#define K_I 0.17//4000
 
 //Speed regulator
-#define SPEED_K_P 10
-#define SPEED_K_I 0
+#define SPEED_K_P 15
+#define SPEED_K_I 1.5
 
 #define TICK_SIZE_S 0.05
 
@@ -48,7 +48,15 @@ void regulator_pos(int32_t ref, int32_t *prev_encoder_pos) {
 static void regulator_speed(int32_t current_pos, int32_t prev_pos, int32_t ref) {
     int32_t speed = (current_pos-prev_pos)/TICK_SIZE_S; //Will be very large. Needs 32bit
     int32_t e = ref - speed;
-    int32_t u = e*SPEED_K_P + TICK_SIZE_S*e_sum_speed*SPEED_K_I + ref;
+    int32_t reg_I = TICK_SIZE_S*e_sum_speed*SPEED_K_I;
+    if(reg_I > 2000) { //2000 is somewhat arbitrary. Not at 4000 (max) because then P will not be able to counteract it 
+        reg_I = 2000;
+    }
+    if(reg_I < -2000) {
+        reg_I = -2000;
+    }
+    int32_t u = e*SPEED_K_P + reg_I + ref;
+    //Anti windup
     e_sum_speed += e;
     //To account for non-linear response when applying voltage (e.g voltage not relating to speed linearly)
     const uint16_t voltage_threshold = 700; 

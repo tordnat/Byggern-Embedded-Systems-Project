@@ -16,8 +16,8 @@
 #define CAN_ID_GAME_NODE1_START 0x2 // Only sent by node 1
 #define CAN_ID_GAME_SCORE 0x3 // Only sent by node 2, recieved by node 1
 #define CAN_ID_GAME_STOP  0x4 // Only sent by node 1 and 3
-#define CAN_ID_GAME_NODE3_START 0x5 // Only sent by node 3
-
+#define CAN_ID_GAME_NODE3_START 0x6 // Only sent by node 3, recieved by node 2
+#define CAN_ID_GAME_NODE3_CTRL 0x7 //Only sent by node 3, recived by node 2
 #include <stdint.h>
 
 #define CAN_TX_MAILBOX_ID 0
@@ -62,5 +62,7 @@ void encode_can_node2_msg(CAN_MESSAGE* msg, node2_msg data);
  * Transfers data from the recieved can message from node 1 to be able to read it from data struct
 */
 void decode_can_node1_msg(CAN_MESSAGE* msg, node1_msg *data);
+
+void decode_can_node3_msg(CAN_MESSAGE* msg, node3_msg *data);
 
 #endif /* CAN_CONTROLLER_H_ */

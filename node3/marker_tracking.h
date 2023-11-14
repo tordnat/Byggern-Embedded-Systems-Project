@@ -3,11 +3,11 @@
 #include <opencv2/aruco.hpp>
 #include <vector>
 
-#define MARKER_ID_TOP_LEFT      40
-#define MARKER_ID_TOP_RIGHT     124
-#define MARKER_ID_BOTTOM_LEFT   23
-#define MARKER_ID_BOTTOM_RIGHT  62
-#define MARKER_ID_ACTUATOR      203
+#define MARKER_ID_TOP_LEFT      3
+#define MARKER_ID_TOP_RIGHT     4
+#define MARKER_ID_BOTTOM_LEFT   1
+#define MARKER_ID_BOTTOM_RIGHT  2
+#define MARKER_ID_ACTUATOR      0
 
 #define NUM_MARKERS 5
 

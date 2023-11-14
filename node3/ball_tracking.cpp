@@ -24,18 +24,18 @@ cv::Point2f detect_ball(const cv::Mat& frame){
 
     cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 2); //Noise reduction
     cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 2);
-
+    //cv::imshow("Tuning: ", mask);
     // Find contours
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     for (const auto& contour : contours) {//Filter contours based on circularity
         float area = cv::contourArea(contour);
-        if (area > 200) { // Area threshold
+        if ((area > 210)) { // Area threshold
             float perimeter = cv::arcLength(contour, true);
             float circularity = 4 * M_PI * area / (perimeter * perimeter);
 
-            if (circularity > 0.82) {
+            if (circularity > 0.81) {
                 cv::Moments M = cv::moments(contour);
                 if (M.m00 != 0) {
                     cv::Point2f center(M.m10 / M.m00, M.m01 / M.m00);

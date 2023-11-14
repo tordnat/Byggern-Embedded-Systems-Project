@@ -91,7 +91,7 @@ cv::Point2f adjust_for_cropping(const cv::Point2f& point_in_cropped_frame, const
 void visualize_ball_tracking(cv::Mat& frame, const cv::Point2f& ball_position) {
     if (ball_position.x >= 0 && ball_position.y >= 0) {
         // Draw a circle at the ball position
-        const int radius = 70; // Radius of the circle
+        const int radius = 50; // Radius of the circle
         const cv::Scalar color(0, 255, 0); // Green color
         const int thickness = 2; // Thickness of the circle outline
 

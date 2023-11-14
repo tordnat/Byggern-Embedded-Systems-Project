@@ -19,6 +19,7 @@
 * - https://docs.opencv.org/4.x/d9/df8/tutorial_root.html
 */
 
+#define MARKER_ID_ACTUATOR      0
 
 int main() {
     //Set up serial
@@ -27,16 +28,16 @@ int main() {
     */
 
     boost::asio::io_service io;
-    boost::asio::serial_port sp(io, "/dev/tty.usbserial-11440");
+    boost::asio::serial_port sp(io, "/dev/tty.usbserial-1420");
 
     sp.set_option(boost::asio::serial_port_base::baud_rate(115200));
 
     boost::system::error_code ec;
-    uint32_t serial_data;
+    std::string serial_data;
 
 
-  //cv::VideoCapture cap(0);
-  cv::VideoCapture cap("../test_data/tracking_test2.mp4"); // Testing
+  cv::VideoCapture cap(0);
+  //cv::VideoCapture cap("../test_data/tracking_test2.mp4"); // Testing
   if (!cap.isOpened()){
     std::cerr << "Error: Camera could not be opened!" << std::endl;
   }
@@ -48,6 +49,7 @@ int main() {
     cv::Point2f actuator_center;
     cv::Point2f actuator_center_prev;
 
+    char data[10];
     // ArUco Tracker Detection variables
     std::vector<int> marker_ids;
     std::vector<std::vector<cv::Point2f>> marker_corners;
@@ -58,30 +60,20 @@ int main() {
         if (frame.empty()) {
         std::cout << "Frame is empty!" << std::endl;
         }
-        
-        detect_markers_center(frame, marker_ids, marker_corners, centers);
-        if(marker_ids.size() >= NUM_MARKERS-1){
-            cropped_frame = crop_frame_by_markers(frame, marker_ids, centers, cropping_rectangle);
-            ball_pos = detect_ball(cropped_frame);
-            actuator_center = get_actuator_center(marker_ids, centers);
-            draw_markers(frame, marker_ids, marker_corners, centers);
-            if ((ball_pos != cv::Point2f(-1, -1) ) && (actuator_center != cv::Point2f(-1, -1))){
-                    visualize_ball_and_actuator(frame, adjust_for_cropping(ball_pos, cropping_rectangle), actuator_center);
-                    actuator_center_prev = actuator_center;
+        ball_pos = detect_ball(frame);
 
-                    serial_data = (uint16_t)(ball_pos.x) | (uint16_t)(ball_pos.y) >> 16;
-                    boost::asio::write(sp, boost::asio::buffer(std::to_string(serial_data)), ec);
-                    // Read from the serial port
-                    //size_t len = sp.read_some(boost::asio::buffer(data), ec);
-                    //std::cout.write(data, len);
-                    
-            } else if(ball_pos != cv::Point2f(-1, -1)){
-                visualize_ball_and_actuator(frame, adjust_for_cropping(ball_pos, cropping_rectangle), actuator_center_prev);
+        if((ball_pos != cv::Point2f(-1, -1)) && ((ball_pos.x > 765) && (ball_pos.x < 1600))){
+            visualize_ball_tracking(frame, ball_pos);
+            serial_data = std::to_string(ball_pos.x) + "," + std::to_string(ball_pos.y) + '\0';
+            boost::asio::write(sp, boost::asio::buffer(serial_data), ec);
+            // Read from the serial port
+            size_t len = sp.read_some(boost::asio::buffer(data), ec);
+            std::cout.write(data, len);
+            std::cout << serial_data << std::endl;
             }
-        }
         cv::imshow("Byggern' Ballz", frame);
         if(cv::waitKey(1) >= 0) break;
-    }
+        }
     cap.release();
     cv::destroyAllWindows();
     return 0;

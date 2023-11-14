@@ -1,8 +1,6 @@
-# Embedded_Systems_TTK4155
-TTK4155 - Embedded and Industrial Computer Systems Design  
+# Byggern' - TTK4155 Embedded and Industrial Computer Systems Design Project
 
-Byggern'!
-
+![demo-gif](demo_tracking.gif)
 
 ## Structure
 

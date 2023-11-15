@@ -19,7 +19,9 @@ The 3 nodes communicate over a CAN bus. Node 1 is an Atmega162, Node 2 is an ATS
 
 ## Visual Feedback with OpenCV
 
+As an extra node to our system we implemented a ball tracker for visual feedback. This allowed us to implement a basic auto-tracking state based on the estimated ball position. The ball tracking is based on finding the contour of a color mapped image and filtering for maximum circularity.
 
+![Tracking Filter](tracking_filter.svg)
 
 <video width="650" height="650" src="https://github.com/tordnat/Byggern_Embedded_Systems_Project/assets/48350530/39bdcba3-e350-430a-a784-dbd0d7d79c5d
 "></video>

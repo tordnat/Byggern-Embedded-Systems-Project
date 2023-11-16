@@ -23,9 +23,7 @@ As an extra node to our system we implemented a ball tracker for visual feedback
 
 ![Tracking Filter](tracking_filter.svg)
 
-<video width="650" height="650" src="https://github.com/tordnat/Byggern_Embedded_Systems_Project/assets/48350530/39bdcba3-e350-430a-a784-dbd0d7d79c5d
-"></video>
-
+<video width="650" height="650" src="https://github.com/tordnat/Byggern_Embedded_Systems_Project/assets/48350530/e62d85df-395b-401e-ba83-1f78afaf9b08"></video>
 
 
 
